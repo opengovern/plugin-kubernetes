@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/opengovern/og-describer-kubernetes/global/constants"
 	"os"
 	"sort"
 	"strings"
 	"text/template"
 
-	"github.com/opengovern/og-describer-kubernetes/global"
 	"github.com/opengovern/og-util/pkg/integration/interfaces"
 )
 
@@ -103,7 +103,7 @@ import (
 	model "github.com/opengovern/og-describer-%[2]s/discovery/pkg/models"
 )
 var ResourceTypes = map[string]model.ResourceType{
-`, global.OGPluginRepoURL, global.IntegrationTypeLower))
+`, constants.OGPluginRepoURL, constants.IntegrationTypeLower))
 
 	// Iterate over each resource type to build its string representations
 	for _, resourceType := range resourceTypes {

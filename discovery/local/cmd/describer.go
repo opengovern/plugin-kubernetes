@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/opengovern/og-describer-kubernetes/global"
+	"github.com/opengovern/og-describer-kubernetes/global/constants"
 	"os"
 	"strconv"
 	"strings"
@@ -44,7 +45,7 @@ var describerCmd = &cobra.Command{
 			IntegrationID:          "",
 			ProviderID:             "",
 			DescribedAt:            time.Now().UnixMilli(),
-			IntegrationType:        global.IntegrationTypeLower,
+			IntegrationType:        constants.IntegrationTypeLower,
 			CipherText:             "",
 			IntegrationLabels:      nil,
 			IntegrationAnnotations: nil,
@@ -113,7 +114,7 @@ var describerCmd = &cobra.Command{
 				ResourceID:      resource.UniqueID(),
 				ResourceName:    resource.Name,
 				Description:     description,
-				IntegrationType: global.IntegrationName,
+				IntegrationType: constants.IntegrationName,
 				ResourceType:    strings.ToLower(job.ResourceType),
 				IntegrationID:   job.IntegrationID,
 				Metadata:        metadata,

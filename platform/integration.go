@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/opengovern/og-describer-kubernetes/global"
+	constants2 "github.com/opengovern/og-describer-kubernetes/global/constants"
 	"github.com/opengovern/og-describer-kubernetes/global/maps"
 	"github.com/opengovern/og-describer-kubernetes/platform/constants"
 	"github.com/opengovern/og-util/pkg/integration"
@@ -32,7 +33,7 @@ func (i *Integration) GetConfiguration() (interfaces.IntegrationConfiguration, e
 }
 
 func (i *Integration) HealthCheck(jsonData []byte, providerId string, labels map[string]string, annotations map[string]string) (bool, error) {
-	var credentials global.IntegrationCredentials
+	var credentials constants2.IntegrationCredentials
 	err := json.Unmarshal(jsonData, &credentials)
 	if err != nil {
 		return false, err
@@ -43,7 +44,7 @@ func (i *Integration) HealthCheck(jsonData []byte, providerId string, labels map
 }
 
 func (i *Integration) DiscoverIntegrations(jsonData []byte) ([]integration.Integration, error) {
-	var credentials global.IntegrationCredentials
+	var credentials constants2.IntegrationCredentials
 	err := json.Unmarshal(jsonData, &credentials)
 	if err != nil {
 		return nil, err

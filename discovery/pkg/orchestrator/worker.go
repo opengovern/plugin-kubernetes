@@ -8,6 +8,7 @@ import (
 	model "github.com/opengovern/og-describer-kubernetes/discovery/pkg/models"
 	"github.com/opengovern/og-describer-kubernetes/discovery/provider"
 	"github.com/opengovern/og-describer-kubernetes/global"
+	"github.com/opengovern/og-describer-kubernetes/global/constants"
 	describe2 "github.com/opengovern/og-util/pkg/describe"
 	"github.com/opengovern/og-util/pkg/es"
 	"github.com/opengovern/og-util/pkg/vault"
@@ -155,7 +156,7 @@ func doDescribe(
 			ResourceID:      resource.UniqueID(),
 			ResourceName:    resource.Name,
 			Description:     description,
-			IntegrationType: global.IntegrationName,
+			IntegrationType: constants.IntegrationName,
 			ResourceType:    strings.ToLower(job.ResourceType),
 			IntegrationID:   job.IntegrationID,
 			Metadata:        metadata,

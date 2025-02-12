@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/opengovern/og-describer-kubernetes/global"
+	"github.com/opengovern/og-describer-kubernetes/global/constants"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -10,7 +10,7 @@ import (
 type Config struct {
 }
 
-func IntegrationHealthcheck(creds global.IntegrationCredentials, cfg Config) (bool, error) {
+func IntegrationHealthcheck(creds constants.IntegrationCredentials, cfg Config) (bool, error) {
 	config, err := clientcmd.RESTConfigFromKubeConfig([]byte(creds.KubeConfig))
 	if err != nil {
 		return false, err

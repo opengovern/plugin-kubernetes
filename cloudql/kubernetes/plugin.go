@@ -12,14 +12,16 @@ import (
 // Plugin returns this plugin
 func Plugin(ctx context.Context) *plugin.Plugin {
 	p := &plugin.Plugin{
-		Name: "steampipe-plugin-github",
+		Name: "steampipe-plugin-kubernetes",
 		ConnectionConfigSchema: &plugin.ConnectionConfigSchema{
 			NewInstance: essdk.ConfigInstance,
 			Schema:      essdk.ConfigSchema(),
 		},
 		DefaultTransform: transform.FromCamel(),
 		TableMap: map[string]*plugin.Table{
-			"kubernetes_node": tableKubernetesNode(),
+			"kubernetes_node":                    tableKubernetesNode(ctx),
+			"kubernetes_persistent_volume_claim": tableKubernetesPersistentVolumeClaim(ctx),
+			"kubernetes_persistent_volume":       tableKubernetesPersistentVolume(ctx),
 		},
 	}
 	for key, table := range p.TableMap {

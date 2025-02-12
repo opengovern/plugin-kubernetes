@@ -1,4 +1,4 @@
-package global
+package constants
 
 import "github.com/opengovern/og-util/pkg/integration"
 

@@ -7,5 +7,45 @@
    "SteampipeTable": "kubernetes_node",
    "Model": "KubernetesNode",
    "Params": []
+ },{
+   "ResourceName": "Kubernetes/PersistentVolume",
+   "Tags": {},
+   "ListDescriber": "DescribeByIntegration(describers.KubernetesPersistentVolume)",
+   "GetDescriber": "",
+   "SteampipeTable": "kubernetes_persistent_volume",
+   "Model": "KubernetesPersistentVolume",
+   "Params": []
+ },{
+   "ResourceName": "Kubernetes/PersistentVolumeClaim",
+   "Tags": {},
+   "ListDescriber": "DescribeByIntegration(describers.KubernetesPersistentVolumeClaim)",
+   "GetDescriber": "",
+   "SteampipeTable": "kubernetes_persistent_volume_claim",
+   "Model": "KubernetesPersistentVolumeClaim",
+   "Params": []
+ },{
+   "ResourceName": "Kubernetes/Pod",
+   "Tags": {},
+   "ListDescriber": "DescribeByIntegration(describers.KubernetesPod)",
+   "GetDescriber": "",
+   "SteampipeTable": "kubernetes_pod",
+   "Model": "KubernetesPod",
+   "Params": []
+ },{
+   "ResourceName": "Kubernetes/Secret",
+   "Tags": {},
+   "ListDescriber": "DescribeByIntegration(describers.KubernetesSecret)",
+   "GetDescriber": "",
+   "SteampipeTable": "kubernetes_secret",
+   "Model": "KubernetesSecret",
+   "Params": []
+ },{
+   "ResourceName": "Kubernetes/Service",
+   "Tags": {},
+   "ListDescriber": "DescribeByIntegration(describers.KubernetesService)",
+   "GetDescriber": "",
+   "SteampipeTable": "kubernetes_service",
+   "Model": "KubernetesService",
+   "Params": []
  }
 ]

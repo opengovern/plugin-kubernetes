@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/opengovern/og-describer-kubernetes/global"
+	"github.com/opengovern/og-describer-kubernetes/global/constants"
 	"github.com/opengovern/og-util/pkg/es"
 	"github.com/opengovern/og-util/proto/src/golang"
 	"go.uber.org/zap"
@@ -174,7 +174,7 @@ func (s *ResourceSender) flushBuffer(force bool) {
 			PlatformID:      resource.PlatformID,
 			ResourceID:      resource.ResourceID,
 			ResourceName:    resource.ResourceName,
-			IntegrationType: global.IntegrationName,
+			IntegrationType: constants.IntegrationName,
 			ResourceType:    strings.ToLower(resource.ResourceType),
 			Metadata: es.LookupResourceMetadata{
 				Parameters: es.ConvertMapToString(s.params),

@@ -14,3 +14,28 @@ type KubernetesNodeDescription struct {
 	MetaObject metav1.ObjectMeta
 	Node       corev1.Node
 }
+
+type KubernetesPersistentVolumeDescription struct {
+	MetaObject metav1.ObjectMeta
+	PV         corev1.PersistentVolume
+}
+
+type KubernetesPersistentVolumeClaimDescription struct {
+	MetaObject metav1.ObjectMeta
+	PVC        corev1.PersistentVolumeClaim
+}
+
+type KubernetesPodDescription struct {
+	MetaObject metav1.ObjectMeta
+	Pod        corev1.Pod
+}
+
+type KubernetesServiceDescription struct {
+	MetaObject metav1.ObjectMeta
+	Service    corev1.Service
+}
+
+type KubernetesSecretDescription struct {
+	MetaObject metav1.ObjectMeta
+	Secret     corev1.Secret
+}

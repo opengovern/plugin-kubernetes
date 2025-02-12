@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/opengovern/og-describer-kubernetes/global"
+	"github.com/opengovern/og-describer-kubernetes/global/constants"
 	"os"
 	"strings"
 )
@@ -63,7 +63,7 @@ import (
 )
 
 var ResourceTypesToTables = map[string]string{
-`, global.OGPluginRepoURL))
+`, constants.OGPluginRepoURL))
 	for _, resourceType := range resourceTypes {
 		b.WriteString(fmt.Sprintf("  \"%s\": \"%s\",\n", resourceType.ResourceName, resourceType.SteampipeTable))
 	}

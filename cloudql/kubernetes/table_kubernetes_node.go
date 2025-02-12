@@ -9,7 +9,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
-func tableKubernetesNode() *plugin.Table {
+func tableKubernetesNode(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_node",
 		Description: "Kubernetes Node is a worker node in Kubernetes.",

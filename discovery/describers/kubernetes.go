@@ -20,7 +20,8 @@ func KubernetesNode(ctx context.Context, client model.Client, extra string, stre
 
 	for _, node := range nodes.Items {
 		var resource models.Resource
-
+		// We don't need to include the managed fields in the description, also it causes issues in elastic search mapping generation
+		node.ManagedFields = nil
 		resource = models.Resource{
 			ID:   fmt.Sprintf("node/%s", node.Name),
 			Name: node.Name,
@@ -53,7 +54,8 @@ func KubernetesPersistentVolume(ctx context.Context, client model.Client, extra 
 
 	for _, pv := range pvs.Items {
 		var resource models.Resource
-
+		// We don't need to include the managed fields in the description, also it causes issues in elastic search mapping generation
+		pv.ManagedFields = nil
 		resource = models.Resource{
 			ID:   fmt.Sprintf("persistentvolume/%s", pv.Name),
 			Name: pv.Name,
@@ -85,7 +87,8 @@ func KubernetesPersistentVolumeClaim(ctx context.Context, client model.Client, e
 
 	for _, pvc := range pvcs.Items {
 		var resource models.Resource
-
+		// We don't need to include the managed fields in the description, also it causes issues in elastic search mapping generation
+		pvc.ManagedFields = nil
 		resource = models.Resource{
 			ID:   fmt.Sprintf("persistentvolumeclaim/%s/%s", pvc.Namespace, pvc.Name),
 			Name: fmt.Sprintf("%s/%s", pvc.Namespace, pvc.Name),
@@ -117,7 +120,8 @@ func KubernetesPod(ctx context.Context, client model.Client, extra string, strea
 
 	for _, pod := range pods.Items {
 		var resource models.Resource
-
+		// We don't need to include the managed fields in the description, also it causes issues in elastic search mapping generation
+		pod.ManagedFields = nil
 		resource = models.Resource{
 			ID:   fmt.Sprintf("pod/%s/%s", pod.Namespace, pod.Name),
 			Name: fmt.Sprintf("%s/%s", pod.Namespace, pod.Name),
@@ -149,7 +153,8 @@ func KubernetesService(ctx context.Context, client model.Client, extra string, s
 
 	for _, service := range services.Items {
 		var resource models.Resource
-
+		// We don't need to include the managed fields in the description, also it causes issues in elastic search mapping generation
+		service.ManagedFields = nil
 		resource = models.Resource{
 			ID:   fmt.Sprintf("service/%s/%s", service.Namespace, service.Name),
 			Name: fmt.Sprintf("%s/%s", service.Namespace, service.Name),
@@ -184,6 +189,8 @@ func KubernetesSecret(ctx context.Context, client model.Client, extra string, st
 		// Do not include the data in the secret
 		secret.Data = nil
 		secret.StringData = nil
+		// We don't need to include the managed fields in the description, also it causes issues in elastic search mapping generation
+		secret.ManagedFields = nil
 		resource = models.Resource{
 			ID:   fmt.Sprintf("secret/%s/%s", secret.Namespace, secret.Name),
 			Name: fmt.Sprintf("%s/%s", secret.Namespace, secret.Name),
@@ -219,6 +226,8 @@ func KubernetesConfigMap(ctx context.Context, client model.Client, extra string,
 		// Do not include the data in the configmap
 		configMap.Data = nil
 		configMap.BinaryData = nil
+		// We don't need to include the managed fields in the description, also it causes issues in elastic search mapping generation
+		configMap.ManagedFields = nil
 		resource = models.Resource{
 			ID:   fmt.Sprintf("configmap/%s/%s", configMap.Namespace, configMap.Name),
 			Name: fmt.Sprintf("%s/%s", configMap.Namespace, configMap.Name),
@@ -250,7 +259,8 @@ func KubernetesServiceAccount(ctx context.Context, client model.Client, extra st
 
 	for _, serviceAccount := range serviceAccounts.Items {
 		var resource models.Resource
-
+		// We don't need to include the managed fields in the description, also it causes issues in elastic search mapping generation
+		serviceAccount.ManagedFields = nil
 		resource = models.Resource{
 			ID:   fmt.Sprintf("serviceaccount/%s/%s", serviceAccount.Namespace, serviceAccount.Name),
 			Name: fmt.Sprintf("%s/%s", serviceAccount.Namespace, serviceAccount.Name),
@@ -282,7 +292,8 @@ func KubernetesDeployment(ctx context.Context, client model.Client, extra string
 
 	for _, deployment := range deployments.Items {
 		var resource models.Resource
-
+		// We don't need to include the managed fields in the description, also it causes issues in elastic search mapping generation
+		deployment.ManagedFields = nil
 		resource = models.Resource{
 			ID:   fmt.Sprintf("deployment/%s/%s", deployment.Namespace, deployment.Name),
 			Name: fmt.Sprintf("%s/%s", deployment.Namespace, deployment.Name),
@@ -314,7 +325,8 @@ func KubernetesStatefulSet(ctx context.Context, client model.Client, extra strin
 
 	for _, statefulSet := range statefulSets.Items {
 		var resource models.Resource
-
+		// We don't need to include the managed fields in the description, also it causes issues in elastic search mapping generation
+		statefulSet.ManagedFields = nil
 		resource = models.Resource{
 			ID:   fmt.Sprintf("statefulset/%s/%s", statefulSet.Namespace, statefulSet.Name),
 			Name: fmt.Sprintf("%s/%s", statefulSet.Namespace, statefulSet.Name),

@@ -1,4 +1,4 @@
-package template
+package kubernetes
 
 import (
 	"context"
@@ -58,19 +58,5 @@ func retryConfig() *plugin.RetryConfig {
 		BackoffAlgorithm:     "Exponential",
 		RetryInterval:        1000,
 		CappedDuration:       30000,
-	}
-}
-
-// function which returns an ErrorPredicate for GitHub API calls
-func isNotFoundError(notFoundErrors []string) plugin.ErrorPredicate {
-	return func(err error) bool {
-		if err != nil {
-			for _, item := range notFoundErrors {
-				if strings.Contains(err.Error(), item) {
-					return true
-				}
-			}
-		}
-		return false
 	}
 }

@@ -3,7 +3,7 @@ package opengovernance
 
 import (
 	"context"
-	template "github.com/opengovern/og-describer-template/discovery/provider"
+	kubernetes "github.com/opengovern/og-describer-kubernetes/discovery/provider"
 	essdk "github.com/opengovern/og-util/pkg/opengovernance-es-sdk"
 	steampipesdk "github.com/opengovern/og-util/pkg/steampipe"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
@@ -14,72 +14,72 @@ type Client struct {
 	essdk.Client
 }
 
-// ==========================  START: ArtifactDockerFile =============================
+// ==========================  START: KubernetesNode =============================
 
-type ArtifactDockerFile struct {
-	ResourceID      string                                 `json:"resource_id"`
-	PlatformID      string                                 `json:"platform_id"`
-	Description     template.ArtifactDockerFileDescription `json:"Description"`
-	Metadata        template.Metadata                      `json:"metadata"`
-	DescribedBy     string                                 `json:"described_by"`
-	ResourceType    string                                 `json:"resource_type"`
-	IntegrationType string                                 `json:"integration_type"`
-	IntegrationID   string                                 `json:"integration_id"`
+type KubernetesNode struct {
+	ResourceID      string                               `json:"resource_id"`
+	PlatformID      string                               `json:"platform_id"`
+	Description     kubernetes.KubernetesNodeDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                  `json:"metadata"`
+	DescribedBy     string                               `json:"described_by"`
+	ResourceType    string                               `json:"resource_type"`
+	IntegrationType string                               `json:"integration_type"`
+	IntegrationID   string                               `json:"integration_id"`
 }
 
-type ArtifactDockerFileHit struct {
-	ID      string             `json:"_id"`
-	Score   float64            `json:"_score"`
-	Index   string             `json:"_index"`
-	Type    string             `json:"_type"`
-	Version int64              `json:"_version,omitempty"`
-	Source  ArtifactDockerFile `json:"_source"`
-	Sort    []interface{}      `json:"sort"`
+type KubernetesNodeHit struct {
+	ID      string         `json:"_id"`
+	Score   float64        `json:"_score"`
+	Index   string         `json:"_index"`
+	Type    string         `json:"_type"`
+	Version int64          `json:"_version,omitempty"`
+	Source  KubernetesNode `json:"_source"`
+	Sort    []interface{}  `json:"sort"`
 }
 
-type ArtifactDockerFileHits struct {
-	Total essdk.SearchTotal       `json:"total"`
-	Hits  []ArtifactDockerFileHit `json:"hits"`
+type KubernetesNodeHits struct {
+	Total essdk.SearchTotal   `json:"total"`
+	Hits  []KubernetesNodeHit `json:"hits"`
 }
 
-type ArtifactDockerFileSearchResponse struct {
-	PitID string                 `json:"pit_id"`
-	Hits  ArtifactDockerFileHits `json:"hits"`
+type KubernetesNodeSearchResponse struct {
+	PitID string             `json:"pit_id"`
+	Hits  KubernetesNodeHits `json:"hits"`
 }
 
-type ArtifactDockerFilePaginator struct {
+type KubernetesNodePaginator struct {
 	paginator *essdk.BaseESPaginator
 }
 
-func (k Client) NewArtifactDockerFilePaginator(filters []essdk.BoolFilter, limit *int64) (ArtifactDockerFilePaginator, error) {
-	paginator, err := essdk.NewPaginator(k.ES(), "github_artifact_dockerfile", filters, limit)
+func (k Client) NewKubernetesNodePaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesNodePaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_node", filters, limit)
 	if err != nil {
-		return ArtifactDockerFilePaginator{}, err
+		return KubernetesNodePaginator{}, err
 	}
 
-	p := ArtifactDockerFilePaginator{
+	p := KubernetesNodePaginator{
 		paginator: paginator,
 	}
 
 	return p, nil
 }
 
-func (p ArtifactDockerFilePaginator) HasNext() bool {
+func (p KubernetesNodePaginator) HasNext() bool {
 	return !p.paginator.Done()
 }
 
-func (p ArtifactDockerFilePaginator) Close(ctx context.Context) error {
+func (p KubernetesNodePaginator) Close(ctx context.Context) error {
 	return p.paginator.Deallocate(ctx)
 }
 
-func (p ArtifactDockerFilePaginator) NextPage(ctx context.Context) ([]ArtifactDockerFile, error) {
-	var response ArtifactDockerFileSearchResponse
+func (p KubernetesNodePaginator) NextPage(ctx context.Context) ([]KubernetesNode, error) {
+	var response KubernetesNodeSearchResponse
 	err := p.paginator.Search(ctx, &response)
 	if err != nil {
 		return nil, err
 	}
 
-	var values []ArtifactDockerFile
+	var values []KubernetesNode
 	for _, hit := range response.Hits.Hits {
 		values = append(values, hit.Source)
 	}
@@ -94,60 +94,71 @@ func (p ArtifactDockerFilePaginator) NextPage(ctx context.Context) ([]ArtifactDo
 	return values, nil
 }
 
-var listArtifactDockerFileFilters = map[string]string{
-	"dockerfile_content": "Description.DockerfileContent",
-	"html_url":           "Description.HTMLURL",
-	"images":             "Description.Images",
-	"last_updated_at":    "Description.LastUpdatedAt",
-	"name":               "Description.Name",
-	"repository":         "Description.Repository",
-	"sha":                "Description.Sha",
+var listKubernetesNodeFilters = map[string]string{
+	"addresses":        "Status.Addresses",
+	"allocatable":      "Status.Allocatable",
+	"capacity":         "Status.Capacity",
+	"conditions":       "Status.Conditions",
+	"config":           "Status.Config",
+	"config_source":    "Description.Node.Spec.ConfigSource",
+	"daemon_endpoints": "Status.DaemonEndpoints",
+	"images":           "Status.Images",
+	"node_info":        "Status.NodeInfo",
+	"phase":            "Status.Phase",
+	"pod_cidr":         "Description.Node.Spec.PodCIDR",
+	"pod_cidrs":        "Description.Node.Spec.PodCIDRs",
+	"provider_id":      "Description.Node.Spec.ProviderID",
+	"taints":           "Description.Node.Spec.Taints",
+	"title":            "Name",
+	"unschedulable":    "Description.Node.Spec.Unschedulable",
+	"volumes_attached": "Status.VolumesAttached",
+	"volumes_in_use":   "Status.VolumesInUse",
 }
 
-func ListArtifactDockerFile(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("ListArtifactDockerFile")
+func ListKubernetesNode(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesNode")
 	runtime.GC()
 
 	// create service
 	cfg := essdk.GetConfig(d.Connection)
 	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
 	if err != nil {
-		plugin.Logger(ctx).Error("ListArtifactDockerFile NewClientCached", "error", err)
+		plugin.Logger(ctx).Error("ListKubernetesNode NewClientCached", "error", err)
 		return nil, err
 	}
 	k := Client{Client: ke}
 
 	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
 	if err != nil {
-		plugin.Logger(ctx).Error("ListArtifactDockerFile NewSelfClientCached", "error", err)
+		plugin.Logger(ctx).Error("ListKubernetesNode NewSelfClientCached", "error", err)
 		return nil, err
 	}
 	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
 	if err != nil {
-		plugin.Logger(ctx).Error("ListArtifactDockerFile GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		plugin.Logger(ctx).Error("ListKubernetesNode GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
 		return nil, err
 	}
 	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
 	if err != nil {
-		plugin.Logger(ctx).Error("ListArtifactDockerFile GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		plugin.Logger(ctx).Error("ListKubernetesNode GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
 		return nil, err
 	}
 	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
 	if err != nil {
-		plugin.Logger(ctx).Error("ListArtifactDockerFile GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		plugin.Logger(ctx).Error("ListKubernetesNode GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
 		return nil, err
 	}
 
-	paginator, err := k.NewArtifactDockerFilePaginator(essdk.BuildFilter(ctx, d.QueryContext, listArtifactDockerFileFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	paginator, err := k.NewKubernetesNodePaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesNodeFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
 	if err != nil {
-		plugin.Logger(ctx).Error("ListArtifactDockerFile NewArtifactDockerFilePaginator", "error", err)
+		plugin.Logger(ctx).Error("ListKubernetesNode NewKubernetesNodePaginator", "error", err)
 		return nil, err
 	}
 
 	for paginator.HasNext() {
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
-			plugin.Logger(ctx).Error("ListArtifactDockerFile paginator.NextPage", "error", err)
+			plugin.Logger(ctx).Error("ListKubernetesNode paginator.NextPage", "error", err)
 			return nil, err
 		}
 
@@ -164,18 +175,29 @@ func ListArtifactDockerFile(ctx context.Context, d *plugin.QueryData, _ *plugin.
 	return nil, nil
 }
 
-var getArtifactDockerFileFilters = map[string]string{
-	"dockerfile_content": "Description.DockerfileContent",
-	"html_url":           "Description.HTMLURL",
-	"images":             "Description.Images",
-	"last_updated_at":    "Description.LastUpdatedAt",
-	"name":               "Description.Name",
-	"repository":         "Description.Repository",
-	"sha":                "Description.Sha",
+var getKubernetesNodeFilters = map[string]string{
+	"addresses":        "Status.Addresses",
+	"allocatable":      "Status.Allocatable",
+	"capacity":         "Status.Capacity",
+	"conditions":       "Status.Conditions",
+	"config":           "Status.Config",
+	"config_source":    "Description.Node.Spec.ConfigSource",
+	"daemon_endpoints": "Status.DaemonEndpoints",
+	"images":           "Status.Images",
+	"node_info":        "Status.NodeInfo",
+	"phase":            "Status.Phase",
+	"pod_cidr":         "Description.Node.Spec.PodCIDR",
+	"pod_cidrs":        "Description.Node.Spec.PodCIDRs",
+	"provider_id":      "Description.Node.Spec.ProviderID",
+	"taints":           "Description.Node.Spec.Taints",
+	"title":            "Name",
+	"unschedulable":    "Description.Node.Spec.Unschedulable",
+	"volumes_attached": "Status.VolumesAttached",
+	"volumes_in_use":   "Status.VolumesInUse",
 }
 
-func GetArtifactDockerFile(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("GetArtifactDockerFile")
+func GetKubernetesNode(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesNode")
 	runtime.GC()
 	// create service
 	cfg := essdk.GetConfig(d.Connection)
@@ -203,7 +225,7 @@ func GetArtifactDockerFile(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	}
 
 	limit := int64(1)
-	paginator, err := k.NewArtifactDockerFilePaginator(essdk.BuildFilter(ctx, d.QueryContext, getArtifactDockerFileFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	paginator, err := k.NewKubernetesNodePaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesNodeFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
 	if err != nil {
 		return nil, err
 	}
@@ -227,4 +249,4 @@ func GetArtifactDockerFile(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 	return nil, nil
 }
 
-// ==========================  END: ArtifactDockerFile =============================
+// ==========================  END: KubernetesNode =============================

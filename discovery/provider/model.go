@@ -1,19 +1,16 @@
-
 // Implement types for each resource
 
 package provider
 
+import (
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
+type Metadata struct {
+}
 
-type Metadata struct{}
-
-type ArtifactDockerFileDescription struct {
-	Sha  *string
-	Name *string
-	LastUpdatedAt *string
-	HTMLURL *string
-	DockerfileContent       string
-	DockerfileContentBase64 *string
-	Repository              map[string]interface{}
-	Images                  []string 
+type KubernetesNodeDescription struct {
+	MetaObject metav1.ObjectMeta
+	Node       corev1.Node
 }

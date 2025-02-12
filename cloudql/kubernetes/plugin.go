@@ -1,4 +1,4 @@
-package template
+package kubernetes
 
 import (
 	"context"
@@ -19,8 +19,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 		},
 		DefaultTransform: transform.FromCamel(),
 		TableMap: map[string]*plugin.Table{
-			
-			"github_artifact_dockerfile": tableGitHubArtifactDockerFile(),
+			"kubernetes_node": tableKubernetesNode(),
 		},
 	}
 	for key, table := range p.TableMap {

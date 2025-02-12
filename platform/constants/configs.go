@@ -13,10 +13,10 @@ var Manifest []byte
 var SetupMd []byte
 
 const (
-	IntegrationName = integration.Type("template") // example: aws_cloud, azure_subscription, github_account
+	IntegrationName = integration.Type("kubernetes") // example: aws_cloud, azure_subscription, github_account
 )
 
 const (
-	DescriberDeploymentName = "og-describer-template"
-	DescriberRunCommand     = "/og-describer-template"
+	DescriberDeploymentName = "og-describer-kubernetes"
+	DescriberRunCommand     = "/og-describer-kubernetes"
 )

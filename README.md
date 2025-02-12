@@ -57,7 +57,7 @@ Fill the Integration information of the Provider in the [configs.go](./global/co
 const (
 IntegrationTypeLower = "template"                                    // example: aws, azure
 IntegrationName      = integration.Type("template,github")          // example: aws_account, github_account
-OGPluginRepoURL      = "github.com/opengovern/og-describer-template" // example: github.com/opengovern/og-describer-aws
+OGPluginRepoURL      = "github.com/opengovern/og-describer-kubernetes" // example: github.com/opengovern/og-describer-aws
 )
 ```
 
@@ -173,11 +173,11 @@ result will be saved in the output.json file.
 
 You can connect the describer to steampipe. For this, you should implement the steampipe plugin.
 
-You can use the [example plugin](./cloudql/template) as a reference. Example is for describing CohereAI datasets resource.
+You can use the [example plugin](./cloudql/kubernetes) as a reference. Example is for describing CohereAI datasets resource.
 
 ### 7.1 Add Table for the resource
 
-Add a file with this format: `table_template_resource.go` in the [plugin folder](./cloudql/template).
+Add a file with this format: `table_template_resource.go` in the [plugin folder](./cloudql/kubernetes).
 You Should implement the table definition for the resource. [Example file](./cloudql/template/table_template_artifact_dockerfile.go) is for describing CohereAI datasets resource.
 
 **Note:** Transform Field should have `Description.` prefix.
@@ -210,6 +210,6 @@ Also there is an example for write a UI spec for digitalocean in the [example](h
 
 ## 9 Test Plugins
 
-Change the [build.yaml.txt](.github/workflows/build.yaml.txt) to `build.yaml` and change the names of the plugins in the file.
+Change the [build.yaml.txt](.github/workflows/build.yaml) to `build.yaml` and change the names of the plugins in the file.
 
 Then you can test the plugins with runing action on the github.

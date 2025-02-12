@@ -2,7 +2,7 @@ package provider
 
 import (
 	"encoding/json"
-	model "github.com/opengovern/og-describer-template/discovery/pkg/models"
+	model "github.com/opengovern/og-describer-kubernetes/discovery/pkg/models"
 	"github.com/opengovern/og-util/pkg/describe"
 )
 
@@ -38,9 +38,9 @@ func AdjustResource(job describe.DescribeJob, resource *model.Resource) error {
 func GetAdditionalParameters(job describe.DescribeJob) (map[string]string, error) {
 	additionalParameters := make(map[string]string)
 
-	if _, ok := job.IntegrationLabels["param"]; ok {
-		additionalParameters["param"] = job.IntegrationLabels["param"]
-	}
+	//if _, ok := job.IntegrationLabels["param"]; ok {
+	//	additionalParameters["param"] = job.IntegrationLabels["param"]
+	//}
 
 	return additionalParameters, nil
 }

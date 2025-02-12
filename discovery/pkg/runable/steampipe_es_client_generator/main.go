@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/opengovern/og-describer-template/global"
+	"github.com/opengovern/og-describer-kubernetes/global"
 	"go/ast"
 	"go/format"
 	"go/parser"
@@ -23,7 +23,7 @@ var (
 	pluginPath        = flag.String("pluginPath", "", "Location of the steampipe plugin")
 )
 
-var PluginPath = fmt.Sprintf("../../../../cloudql/"+global.IntegrationTypeLower)
+var PluginPath = fmt.Sprintf("./cloudql/" + global.IntegrationTypeLower)
 
 type IntegrationType struct {
 	Name            string
@@ -43,11 +43,11 @@ type ResourceType struct {
 
 func main() {
 	if output == nil || len(*output) == 0 {
-		v := "../../es/resources_clients.go"
+		v := "./discovery/pkg/es/resources_clients.go"
 		output = &v
 	}
 	if file == nil || len(*file) == 0 {
-		v := "../../../provider/model.go"
+		v := "./discovery/provider/model.go"
 		file = &v
 	}
 
@@ -57,7 +57,7 @@ func main() {
 	}
 
 	if resourceTypesFile == nil || len(*resourceTypesFile) == 0 {
-		rt := "../../../../global/maps/resource-types.json"
+		rt := "./global/maps/resource-types.json"
 		resourceTypesFile = &rt
 	}
 

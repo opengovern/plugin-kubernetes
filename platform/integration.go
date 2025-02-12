@@ -7,6 +7,7 @@ import (
 	"github.com/opengovern/og-describer-kubernetes/platform/constants"
 	"github.com/opengovern/og-util/pkg/integration"
 	"github.com/opengovern/og-util/pkg/integration/interfaces"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 type Integration struct{}
@@ -36,8 +37,7 @@ func (i *Integration) HealthCheck(jsonData []byte, providerId string, labels map
 	if err != nil {
 		return false, err
 	}
-	// TODO add credentials
-	isHealthy, err := IntegrationHealthcheck(Config{})
+	isHealthy, err := IntegrationHealthcheck(credentials, Config{})
 
 	return isHealthy, err
 }
@@ -48,11 +48,18 @@ func (i *Integration) DiscoverIntegrations(jsonData []byte) ([]integration.Integ
 	if err != nil {
 		return nil, err
 	}
-	var integrations []integration.Integration
-	// TODO
-	_, err = IntegrationDiscovery(Config{})
 
-	return integrations, nil
+	config, err := clientcmd.RESTConfigFromKubeConfig([]byte(credentials.KubeConfig))
+	if err != nil {
+		return nil, err
+	}
+
+	return []integration.Integration{
+		{
+			ProviderID: config.Host,
+			Name:       config.Host,
+		},
+	}, nil
 }
 
 func (i *Integration) GetResourceTypesByLabels(labels map[string]string) ([]interfaces.ResourceTypeConfiguration, error) {

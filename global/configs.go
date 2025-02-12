@@ -9,5 +9,5 @@ const (
 )
 
 type IntegrationCredentials struct {
-	// TODO
+	KubeConfig string `json:"kubeconfig"`
 }

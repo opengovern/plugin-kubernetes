@@ -9,5 +9,5 @@ const (
 )
 
 type IntegrationCredentials struct {
-	KubeConfig string `json:"kubeconfig"`
+	KubeConfig []byte `json:"kubeconfig"`
 }

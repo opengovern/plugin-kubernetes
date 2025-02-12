@@ -1,5 +1,5 @@
 package models
 
 type IntegrationCredentials struct {
-	KubeConfig string `json:"kubeconfig"`
+	KubeConfig []byte `json:"kubeconfig"`
 }

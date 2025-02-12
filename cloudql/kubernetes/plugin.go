@@ -22,6 +22,13 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"kubernetes_node":                    tableKubernetesNode(ctx),
 			"kubernetes_persistent_volume_claim": tableKubernetesPersistentVolumeClaim(ctx),
 			"kubernetes_persistent_volume":       tableKubernetesPersistentVolume(ctx),
+			"kubernetes_pod":                     tableKubernetesPod(ctx),
+			"kubernetes_service":                 tableKubernetesService(ctx),
+			"kubernetes_secret":                  tableKubernetesSecret(ctx),
+			"kubernetes_deployment":              tableKubernetesDeployment(ctx),
+			"kubernetes_stateful_set":            tableKubernetesStatefulSet(ctx),
+			"kubernetes_config_map":              tableKubernetesConfigMap(ctx),
+			"kubernetes_service_account":         tableKubernetesServiceAccount(ctx),
 		},
 	}
 	for key, table := range p.TableMap {

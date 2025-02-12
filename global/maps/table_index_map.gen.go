@@ -11,6 +11,10 @@ var ResourceTypesToTables = map[string]string{
   "Kubernetes/Pod": "kubernetes_pod",
   "Kubernetes/Secret": "kubernetes_secret",
   "Kubernetes/Service": "kubernetes_service",
+  "Kubernetes/ConfigMap": "kubernetes_config_map",
+  "Kubernetes/ServiceAccount": "kubernetes_service_account",
+  "Kubernetes/StatefulSet": "kubernetes_stateful_set",
+  "Kubernetes/Deployment": "kubernetes_deployment",
 }
 
 var ResourceTypeToDescription = map[string]interface{}{
@@ -20,6 +24,10 @@ var ResourceTypeToDescription = map[string]interface{}{
   "Kubernetes/Pod": opengovernance.KubernetesPod{},
   "Kubernetes/Secret": opengovernance.KubernetesSecret{},
   "Kubernetes/Service": opengovernance.KubernetesService{},
+  "Kubernetes/ConfigMap": opengovernance.KubernetesConfigMap{},
+  "Kubernetes/ServiceAccount": opengovernance.KubernetesServiceAccount{},
+  "Kubernetes/StatefulSet": opengovernance.KubernetesStatefulSet{},
+  "Kubernetes/Deployment": opengovernance.KubernetesDeployment{},
 }
 
 var TablesToResourceTypes = map[string]string{
@@ -29,4 +37,8 @@ var TablesToResourceTypes = map[string]string{
   "kubernetes_pod": "Kubernetes/Pod",
   "kubernetes_secret": "Kubernetes/Secret",
   "kubernetes_service": "Kubernetes/Service",
+  "kubernetes_config_map": "Kubernetes/ConfigMap",
+  "kubernetes_service_account": "Kubernetes/ServiceAccount",
+  "kubernetes_stateful_set": "Kubernetes/StatefulSet",
+  "kubernetes_deployment": "Kubernetes/Deployment",
 }

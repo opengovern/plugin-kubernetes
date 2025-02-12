@@ -85,6 +85,58 @@ var ResourceTypes = map[string]model.ResourceType{
 		ListDescriber:        provider.DescribeByIntegration(describers.KubernetesService),
 		GetDescriber:         nil,
 	},
+
+	"Kubernetes/ConfigMap": {
+		IntegrationType:      constants.IntegrationName,
+		ResourceName:         "Kubernetes/ConfigMap",
+		Tags:                 map[string][]string{
+        },
+		Labels:               map[string]string{
+        },
+		Annotations:          map[string]string{
+        },
+		ListDescriber:        provider.DescribeByIntegration(describers.KubernetesConfigMap),
+		GetDescriber:         nil,
+	},
+
+	"Kubernetes/ServiceAccount": {
+		IntegrationType:      constants.IntegrationName,
+		ResourceName:         "Kubernetes/ServiceAccount",
+		Tags:                 map[string][]string{
+        },
+		Labels:               map[string]string{
+        },
+		Annotations:          map[string]string{
+        },
+		ListDescriber:        provider.DescribeByIntegration(describers.KubernetesServiceAccount),
+		GetDescriber:         nil,
+	},
+
+	"Kubernetes/StatefulSet": {
+		IntegrationType:      constants.IntegrationName,
+		ResourceName:         "Kubernetes/StatefulSet",
+		Tags:                 map[string][]string{
+        },
+		Labels:               map[string]string{
+        },
+		Annotations:          map[string]string{
+        },
+		ListDescriber:        provider.DescribeByIntegration(describers.KubernetesStatefulSet),
+		GetDescriber:         nil,
+	},
+
+	"Kubernetes/Deployment": {
+		IntegrationType:      constants.IntegrationName,
+		ResourceName:         "Kubernetes/Deployment",
+		Tags:                 map[string][]string{
+        },
+		Labels:               map[string]string{
+        },
+		Annotations:          map[string]string{
+        },
+		ListDescriber:        provider.DescribeByIntegration(describers.KubernetesDeployment),
+		GetDescriber:         nil,
+	},
 }
 
 
@@ -131,6 +183,34 @@ var ResourceTypeConfigs = map[string]*interfaces.ResourceTypeConfiguration{
 		Description:                 "",
 		
 	},
+
+	"Kubernetes/ConfigMap": {
+		Name:         "Kubernetes/ConfigMap",
+		IntegrationType:      constants.IntegrationName,
+		Description:                 "",
+		
+	},
+
+	"Kubernetes/ServiceAccount": {
+		Name:         "Kubernetes/ServiceAccount",
+		IntegrationType:      constants.IntegrationName,
+		Description:                 "",
+		
+	},
+
+	"Kubernetes/StatefulSet": {
+		Name:         "Kubernetes/StatefulSet",
+		IntegrationType:      constants.IntegrationName,
+		Description:                 "",
+		
+	},
+
+	"Kubernetes/Deployment": {
+		Name:         "Kubernetes/Deployment",
+		IntegrationType:      constants.IntegrationName,
+		Description:                 "",
+		
+	},
 }
 
 
@@ -141,4 +221,8 @@ var ResourceTypesList = []string{
   "Kubernetes/Pod",
   "Kubernetes/Secret",
   "Kubernetes/Service",
+  "Kubernetes/ConfigMap",
+  "Kubernetes/ServiceAccount",
+  "Kubernetes/StatefulSet",
+  "Kubernetes/Deployment",
 }

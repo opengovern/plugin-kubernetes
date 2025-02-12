@@ -47,5 +47,37 @@
    "SteampipeTable": "kubernetes_service",
    "Model": "KubernetesService",
    "Params": []
+ },{
+   "ResourceName": "Kubernetes/ConfigMap",
+   "Tags": {},
+   "ListDescriber": "DescribeByIntegration(describers.KubernetesConfigMap)",
+   "GetDescriber": "",
+   "SteampipeTable": "kubernetes_config_map",
+   "Model": "KubernetesConfigMap",
+   "Params": []
+ },{
+   "ResourceName": "Kubernetes/ServiceAccount",
+   "Tags": {},
+   "ListDescriber": "DescribeByIntegration(describers.KubernetesServiceAccount)",
+   "GetDescriber": "",
+   "SteampipeTable": "kubernetes_service_account",
+   "Model": "KubernetesServiceAccount",
+   "Params": []
+ },{
+   "ResourceName": "Kubernetes/StatefulSet",
+   "Tags": {},
+   "ListDescriber": "DescribeByIntegration(describers.KubernetesStatefulSet)",
+   "GetDescriber": "",
+   "SteampipeTable": "kubernetes_stateful_set",
+   "Model": "KubernetesStatefulSet",
+   "Params": []
+ },{
+   "ResourceName": "Kubernetes/Deployment",
+   "Tags": {},
+   "ListDescriber": "DescribeByIntegration(describers.KubernetesDeployment)",
+   "GetDescriber": "",
+   "SteampipeTable": "kubernetes_deployment",
+   "Model": "KubernetesDeployment",
+   "Params": []
  }
 ]

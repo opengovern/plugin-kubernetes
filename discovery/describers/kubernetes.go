@@ -204,3 +204,134 @@ func KubernetesSecret(ctx context.Context, client model.Client, extra string, st
 
 	return allValues, nil
 }
+
+func KubernetesConfigMap(ctx context.Context, client model.Client, extra string, stream *models.StreamSender) ([]models.Resource, error) {
+	var allValues []models.Resource
+
+	configMaps, err := client.KubernetesClient.CoreV1().ConfigMaps("").List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, configMap := range configMaps.Items {
+		var resource models.Resource
+
+		// Do not include the data in the configmap
+		configMap.Data = nil
+		configMap.BinaryData = nil
+		resource = models.Resource{
+			ID:   fmt.Sprintf("configmap/%s/%s", configMap.Namespace, configMap.Name),
+			Name: fmt.Sprintf("%s/%s", configMap.Namespace, configMap.Name),
+			Description: model.KubernetesConfigMapDescription{
+				MetaObject: configMap.ObjectMeta,
+				ConfigMap:  configMap,
+			},
+		}
+
+		if stream != nil {
+			if err := (*stream)(resource); err != nil {
+				return allValues, fmt.Errorf("error streaming resource: %w", err)
+			}
+		} else {
+			allValues = append(allValues, resource)
+		}
+	}
+
+	return allValues, nil
+}
+
+func KubernetesServiceAccount(ctx context.Context, client model.Client, extra string, stream *models.StreamSender) ([]models.Resource, error) {
+	var allValues []models.Resource
+
+	serviceAccounts, err := client.KubernetesClient.CoreV1().ServiceAccounts("").List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, serviceAccount := range serviceAccounts.Items {
+		var resource models.Resource
+
+		resource = models.Resource{
+			ID:   fmt.Sprintf("serviceaccount/%s/%s", serviceAccount.Namespace, serviceAccount.Name),
+			Name: fmt.Sprintf("%s/%s", serviceAccount.Namespace, serviceAccount.Name),
+			Description: model.KubernetesServiceAccountDescription{
+				MetaObject:     serviceAccount.ObjectMeta,
+				ServiceAccount: serviceAccount,
+			},
+		}
+
+		if stream != nil {
+			if err := (*stream)(resource); err != nil {
+				return allValues, fmt.Errorf("error streaming resource: %w", err)
+			}
+		} else {
+			allValues = append(allValues, resource)
+		}
+	}
+
+	return allValues, nil
+}
+
+func KubernetesDeployment(ctx context.Context, client model.Client, extra string, stream *models.StreamSender) ([]models.Resource, error) {
+	var allValues []models.Resource
+
+	deployments, err := client.KubernetesClient.AppsV1().Deployments("").List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, deployment := range deployments.Items {
+		var resource models.Resource
+
+		resource = models.Resource{
+			ID:   fmt.Sprintf("deployment/%s/%s", deployment.Namespace, deployment.Name),
+			Name: fmt.Sprintf("%s/%s", deployment.Namespace, deployment.Name),
+			Description: model.KubernetesDeploymentDescription{
+				MetaObject: deployment.ObjectMeta,
+				Deployment: deployment,
+			},
+		}
+
+		if stream != nil {
+			if err := (*stream)(resource); err != nil {
+				return allValues, fmt.Errorf("error streaming resource: %w", err)
+			}
+		} else {
+			allValues = append(allValues, resource)
+		}
+	}
+
+	return allValues, nil
+}
+
+func KubernetesStatefulSet(ctx context.Context, client model.Client, extra string, stream *models.StreamSender) ([]models.Resource, error) {
+	var allValues []models.Resource
+
+	statefulSets, err := client.KubernetesClient.AppsV1().StatefulSets("").List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, statefulSet := range statefulSets.Items {
+		var resource models.Resource
+
+		resource = models.Resource{
+			ID:   fmt.Sprintf("statefulset/%s/%s", statefulSet.Namespace, statefulSet.Name),
+			Name: fmt.Sprintf("%s/%s", statefulSet.Namespace, statefulSet.Name),
+			Description: model.KubernetesStatefulSetDescription{
+				MetaObject:  statefulSet.ObjectMeta,
+				StatefulSet: statefulSet,
+			},
+		}
+
+		if stream != nil {
+			if err := (*stream)(resource); err != nil {
+				return allValues, fmt.Errorf("error streaming resource: %w", err)
+			}
+		} else {
+			allValues = append(allValues, resource)
+		}
+	}
+
+	return allValues, nil
+}

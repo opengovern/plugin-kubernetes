@@ -10,7 +10,7 @@ import (
 
 func tableKubernetesEndpoints(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "kubernetes_endpoint",
+		Name:        "kubernetes_endpoints",
 		Description: "Set of addresses and ports that comprise a service. More info: https://kubernetes.io/docs/concepts/services-networking/service/#services-without-selectors.",
 		Get: &plugin.GetConfig{
 			Hydrate: opengovernance.GetKubernetesEndpoint,

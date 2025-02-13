@@ -14,6 +14,3611 @@ type Client struct {
 	essdk.Client
 }
 
+// ==========================  START: KubernetesClusterRole =============================
+
+type KubernetesClusterRole struct {
+	ResourceID      string                                      `json:"resource_id"`
+	PlatformID      string                                      `json:"platform_id"`
+	Description     kubernetes.KubernetesClusterRoleDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                         `json:"metadata"`
+	DescribedBy     string                                      `json:"described_by"`
+	ResourceType    string                                      `json:"resource_type"`
+	IntegrationType string                                      `json:"integration_type"`
+	IntegrationID   string                                      `json:"integration_id"`
+}
+
+type KubernetesClusterRoleHit struct {
+	ID      string                `json:"_id"`
+	Score   float64               `json:"_score"`
+	Index   string                `json:"_index"`
+	Type    string                `json:"_type"`
+	Version int64                 `json:"_version,omitempty"`
+	Source  KubernetesClusterRole `json:"_source"`
+	Sort    []interface{}         `json:"sort"`
+}
+
+type KubernetesClusterRoleHits struct {
+	Total essdk.SearchTotal          `json:"total"`
+	Hits  []KubernetesClusterRoleHit `json:"hits"`
+}
+
+type KubernetesClusterRoleSearchResponse struct {
+	PitID string                    `json:"pit_id"`
+	Hits  KubernetesClusterRoleHits `json:"hits"`
+}
+
+type KubernetesClusterRolePaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesClusterRolePaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesClusterRolePaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_clusterrole", filters, limit)
+	if err != nil {
+		return KubernetesClusterRolePaginator{}, err
+	}
+
+	p := KubernetesClusterRolePaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesClusterRolePaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesClusterRolePaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesClusterRolePaginator) NextPage(ctx context.Context) ([]KubernetesClusterRole, error) {
+	var response KubernetesClusterRoleSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesClusterRole
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesClusterRoleFilters = map[string]string{
+	"title": "Name",
+}
+
+func ListKubernetesClusterRole(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesClusterRole")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesClusterRole NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesClusterRole NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesClusterRole GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesClusterRole GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesClusterRole GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesClusterRolePaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesClusterRoleFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesClusterRole NewKubernetesClusterRolePaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesClusterRole paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesClusterRoleFilters = map[string]string{
+	"title": "Name",
+}
+
+func GetKubernetesClusterRole(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesClusterRole")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesClusterRolePaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesClusterRoleFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesClusterRole =============================
+
+// ==========================  START: KubernetesClusterRoleBinding =============================
+
+type KubernetesClusterRoleBinding struct {
+	ResourceID      string                                             `json:"resource_id"`
+	PlatformID      string                                             `json:"platform_id"`
+	Description     kubernetes.KubernetesClusterRoleBindingDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                                `json:"metadata"`
+	DescribedBy     string                                             `json:"described_by"`
+	ResourceType    string                                             `json:"resource_type"`
+	IntegrationType string                                             `json:"integration_type"`
+	IntegrationID   string                                             `json:"integration_id"`
+}
+
+type KubernetesClusterRoleBindingHit struct {
+	ID      string                       `json:"_id"`
+	Score   float64                      `json:"_score"`
+	Index   string                       `json:"_index"`
+	Type    string                       `json:"_type"`
+	Version int64                        `json:"_version,omitempty"`
+	Source  KubernetesClusterRoleBinding `json:"_source"`
+	Sort    []interface{}                `json:"sort"`
+}
+
+type KubernetesClusterRoleBindingHits struct {
+	Total essdk.SearchTotal                 `json:"total"`
+	Hits  []KubernetesClusterRoleBindingHit `json:"hits"`
+}
+
+type KubernetesClusterRoleBindingSearchResponse struct {
+	PitID string                           `json:"pit_id"`
+	Hits  KubernetesClusterRoleBindingHits `json:"hits"`
+}
+
+type KubernetesClusterRoleBindingPaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesClusterRoleBindingPaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesClusterRoleBindingPaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_clusterrolebinding", filters, limit)
+	if err != nil {
+		return KubernetesClusterRoleBindingPaginator{}, err
+	}
+
+	p := KubernetesClusterRoleBindingPaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesClusterRoleBindingPaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesClusterRoleBindingPaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesClusterRoleBindingPaginator) NextPage(ctx context.Context) ([]KubernetesClusterRoleBinding, error) {
+	var response KubernetesClusterRoleBindingSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesClusterRoleBinding
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesClusterRoleBindingFilters = map[string]string{
+	"role_api_group": "RoleRef.APIGroup",
+	"role_kind":      "RoleRef.Kind",
+	"role_name":      "RoleRef.Name",
+	"title":          "Name",
+}
+
+func ListKubernetesClusterRoleBinding(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesClusterRoleBinding")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesClusterRoleBinding NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesClusterRoleBinding NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesClusterRoleBinding GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesClusterRoleBinding GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesClusterRoleBinding GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesClusterRoleBindingPaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesClusterRoleBindingFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesClusterRoleBinding NewKubernetesClusterRoleBindingPaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesClusterRoleBinding paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesClusterRoleBindingFilters = map[string]string{
+	"role_api_group": "RoleRef.APIGroup",
+	"role_kind":      "RoleRef.Kind",
+	"role_name":      "RoleRef.Name",
+	"title":          "Name",
+}
+
+func GetKubernetesClusterRoleBinding(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesClusterRoleBinding")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesClusterRoleBindingPaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesClusterRoleBindingFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesClusterRoleBinding =============================
+
+// ==========================  START: KubernetesConfigMap =============================
+
+type KubernetesConfigMap struct {
+	ResourceID      string                                    `json:"resource_id"`
+	PlatformID      string                                    `json:"platform_id"`
+	Description     kubernetes.KubernetesConfigMapDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                       `json:"metadata"`
+	DescribedBy     string                                    `json:"described_by"`
+	ResourceType    string                                    `json:"resource_type"`
+	IntegrationType string                                    `json:"integration_type"`
+	IntegrationID   string                                    `json:"integration_id"`
+}
+
+type KubernetesConfigMapHit struct {
+	ID      string              `json:"_id"`
+	Score   float64             `json:"_score"`
+	Index   string              `json:"_index"`
+	Type    string              `json:"_type"`
+	Version int64               `json:"_version,omitempty"`
+	Source  KubernetesConfigMap `json:"_source"`
+	Sort    []interface{}       `json:"sort"`
+}
+
+type KubernetesConfigMapHits struct {
+	Total essdk.SearchTotal        `json:"total"`
+	Hits  []KubernetesConfigMapHit `json:"hits"`
+}
+
+type KubernetesConfigMapSearchResponse struct {
+	PitID string                  `json:"pit_id"`
+	Hits  KubernetesConfigMapHits `json:"hits"`
+}
+
+type KubernetesConfigMapPaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesConfigMapPaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesConfigMapPaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_configmap", filters, limit)
+	if err != nil {
+		return KubernetesConfigMapPaginator{}, err
+	}
+
+	p := KubernetesConfigMapPaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesConfigMapPaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesConfigMapPaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesConfigMapPaginator) NextPage(ctx context.Context) ([]KubernetesConfigMap, error) {
+	var response KubernetesConfigMapSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesConfigMap
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesConfigMapFilters = map[string]string{
+	"immutable": "Description.ConfigMap.Immutable",
+	"title":     "Description.ConfigMap.Name",
+}
+
+func ListKubernetesConfigMap(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesConfigMap")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesConfigMap NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesConfigMap NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesConfigMap GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesConfigMap GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesConfigMap GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesConfigMapPaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesConfigMapFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesConfigMap NewKubernetesConfigMapPaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesConfigMap paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesConfigMapFilters = map[string]string{
+	"immutable": "Description.ConfigMap.Immutable",
+	"title":     "Description.ConfigMap.Name",
+}
+
+func GetKubernetesConfigMap(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesConfigMap")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesConfigMapPaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesConfigMapFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesConfigMap =============================
+
+// ==========================  START: KubernetesCronJob =============================
+
+type KubernetesCronJob struct {
+	ResourceID      string                                  `json:"resource_id"`
+	PlatformID      string                                  `json:"platform_id"`
+	Description     kubernetes.KubernetesCronJobDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                     `json:"metadata"`
+	DescribedBy     string                                  `json:"described_by"`
+	ResourceType    string                                  `json:"resource_type"`
+	IntegrationType string                                  `json:"integration_type"`
+	IntegrationID   string                                  `json:"integration_id"`
+}
+
+type KubernetesCronJobHit struct {
+	ID      string            `json:"_id"`
+	Score   float64           `json:"_score"`
+	Index   string            `json:"_index"`
+	Type    string            `json:"_type"`
+	Version int64             `json:"_version,omitempty"`
+	Source  KubernetesCronJob `json:"_source"`
+	Sort    []interface{}     `json:"sort"`
+}
+
+type KubernetesCronJobHits struct {
+	Total essdk.SearchTotal      `json:"total"`
+	Hits  []KubernetesCronJobHit `json:"hits"`
+}
+
+type KubernetesCronJobSearchResponse struct {
+	PitID string                `json:"pit_id"`
+	Hits  KubernetesCronJobHits `json:"hits"`
+}
+
+type KubernetesCronJobPaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesCronJobPaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesCronJobPaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_cronjob", filters, limit)
+	if err != nil {
+		return KubernetesCronJobPaginator{}, err
+	}
+
+	p := KubernetesCronJobPaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesCronJobPaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesCronJobPaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesCronJobPaginator) NextPage(ctx context.Context) ([]KubernetesCronJob, error) {
+	var response KubernetesCronJobSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesCronJob
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesCronJobFilters = map[string]string{
+	"active":                        "Status.Active",
+	"concurrency_policy":            "Spec.ConcurrencyPolicy",
+	"failed_jobs_history_limit":     "Spec.FailedJobsHistoryLimit",
+	"job_template":                  "Spec.JobTemplate",
+	"schedule":                      "Spec.Schedule",
+	"starting_deadline_seconds":     "Spec.StartingDeadlineSeconds",
+	"successful_jobs_history_limit": "Spec.SuccessfulJobsHistoryLimit",
+	"suspend":                       "Spec.Suspend",
+	"title":                         "Name",
+}
+
+func ListKubernetesCronJob(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesCronJob")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesCronJob NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesCronJob NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesCronJob GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesCronJob GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesCronJob GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesCronJobPaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesCronJobFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesCronJob NewKubernetesCronJobPaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesCronJob paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesCronJobFilters = map[string]string{
+	"active":                        "Status.Active",
+	"concurrency_policy":            "Spec.ConcurrencyPolicy",
+	"failed_jobs_history_limit":     "Spec.FailedJobsHistoryLimit",
+	"job_template":                  "Spec.JobTemplate",
+	"schedule":                      "Spec.Schedule",
+	"starting_deadline_seconds":     "Spec.StartingDeadlineSeconds",
+	"successful_jobs_history_limit": "Spec.SuccessfulJobsHistoryLimit",
+	"suspend":                       "Spec.Suspend",
+	"title":                         "Name",
+}
+
+func GetKubernetesCronJob(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesCronJob")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesCronJobPaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesCronJobFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesCronJob =============================
+
+// ==========================  START: KubernetesCustomResource =============================
+
+type KubernetesCustomResource struct {
+	ResourceID      string                                         `json:"resource_id"`
+	PlatformID      string                                         `json:"platform_id"`
+	Description     kubernetes.KubernetesCustomResourceDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                            `json:"metadata"`
+	DescribedBy     string                                         `json:"described_by"`
+	ResourceType    string                                         `json:"resource_type"`
+	IntegrationType string                                         `json:"integration_type"`
+	IntegrationID   string                                         `json:"integration_id"`
+}
+
+type KubernetesCustomResourceHit struct {
+	ID      string                   `json:"_id"`
+	Score   float64                  `json:"_score"`
+	Index   string                   `json:"_index"`
+	Type    string                   `json:"_type"`
+	Version int64                    `json:"_version,omitempty"`
+	Source  KubernetesCustomResource `json:"_source"`
+	Sort    []interface{}            `json:"sort"`
+}
+
+type KubernetesCustomResourceHits struct {
+	Total essdk.SearchTotal             `json:"total"`
+	Hits  []KubernetesCustomResourceHit `json:"hits"`
+}
+
+type KubernetesCustomResourceSearchResponse struct {
+	PitID string                       `json:"pit_id"`
+	Hits  KubernetesCustomResourceHits `json:"hits"`
+}
+
+type KubernetesCustomResourcePaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesCustomResourcePaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesCustomResourcePaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_customresource", filters, limit)
+	if err != nil {
+		return KubernetesCustomResourcePaginator{}, err
+	}
+
+	p := KubernetesCustomResourcePaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesCustomResourcePaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesCustomResourcePaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesCustomResourcePaginator) NextPage(ctx context.Context) ([]KubernetesCustomResource, error) {
+	var response KubernetesCustomResourceSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesCustomResource
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesCustomResourceFilters = map[string]string{}
+
+func ListKubernetesCustomResource(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesCustomResource")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesCustomResource NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesCustomResource NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesCustomResource GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesCustomResource GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesCustomResource GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesCustomResourcePaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesCustomResourceFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesCustomResource NewKubernetesCustomResourcePaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesCustomResource paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesCustomResourceFilters = map[string]string{}
+
+func GetKubernetesCustomResource(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesCustomResource")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesCustomResourcePaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesCustomResourceFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesCustomResource =============================
+
+// ==========================  START: KubernetesCustomResourceDefinition =============================
+
+type KubernetesCustomResourceDefinition struct {
+	ResourceID      string                                                   `json:"resource_id"`
+	PlatformID      string                                                   `json:"platform_id"`
+	Description     kubernetes.KubernetesCustomResourceDefinitionDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                                      `json:"metadata"`
+	DescribedBy     string                                                   `json:"described_by"`
+	ResourceType    string                                                   `json:"resource_type"`
+	IntegrationType string                                                   `json:"integration_type"`
+	IntegrationID   string                                                   `json:"integration_id"`
+}
+
+type KubernetesCustomResourceDefinitionHit struct {
+	ID      string                             `json:"_id"`
+	Score   float64                            `json:"_score"`
+	Index   string                             `json:"_index"`
+	Type    string                             `json:"_type"`
+	Version int64                              `json:"_version,omitempty"`
+	Source  KubernetesCustomResourceDefinition `json:"_source"`
+	Sort    []interface{}                      `json:"sort"`
+}
+
+type KubernetesCustomResourceDefinitionHits struct {
+	Total essdk.SearchTotal                       `json:"total"`
+	Hits  []KubernetesCustomResourceDefinitionHit `json:"hits"`
+}
+
+type KubernetesCustomResourceDefinitionSearchResponse struct {
+	PitID string                                 `json:"pit_id"`
+	Hits  KubernetesCustomResourceDefinitionHits `json:"hits"`
+}
+
+type KubernetesCustomResourceDefinitionPaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesCustomResourceDefinitionPaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesCustomResourceDefinitionPaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_customresourcedefinition", filters, limit)
+	if err != nil {
+		return KubernetesCustomResourceDefinitionPaginator{}, err
+	}
+
+	p := KubernetesCustomResourceDefinitionPaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesCustomResourceDefinitionPaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesCustomResourceDefinitionPaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesCustomResourceDefinitionPaginator) NextPage(ctx context.Context) ([]KubernetesCustomResourceDefinition, error) {
+	var response KubernetesCustomResourceDefinitionSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesCustomResourceDefinition
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesCustomResourceDefinitionFilters = map[string]string{}
+
+func ListKubernetesCustomResourceDefinition(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesCustomResourceDefinition")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesCustomResourceDefinition NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesCustomResourceDefinition NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesCustomResourceDefinition GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesCustomResourceDefinition GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesCustomResourceDefinition GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesCustomResourceDefinitionPaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesCustomResourceDefinitionFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesCustomResourceDefinition NewKubernetesCustomResourceDefinitionPaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesCustomResourceDefinition paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesCustomResourceDefinitionFilters = map[string]string{}
+
+func GetKubernetesCustomResourceDefinition(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesCustomResourceDefinition")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesCustomResourceDefinitionPaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesCustomResourceDefinitionFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesCustomResourceDefinition =============================
+
+// ==========================  START: KubernetesDaemonSet =============================
+
+type KubernetesDaemonSet struct {
+	ResourceID      string                                    `json:"resource_id"`
+	PlatformID      string                                    `json:"platform_id"`
+	Description     kubernetes.KubernetesDaemonSetDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                       `json:"metadata"`
+	DescribedBy     string                                    `json:"described_by"`
+	ResourceType    string                                    `json:"resource_type"`
+	IntegrationType string                                    `json:"integration_type"`
+	IntegrationID   string                                    `json:"integration_id"`
+}
+
+type KubernetesDaemonSetHit struct {
+	ID      string              `json:"_id"`
+	Score   float64             `json:"_score"`
+	Index   string              `json:"_index"`
+	Type    string              `json:"_type"`
+	Version int64               `json:"_version,omitempty"`
+	Source  KubernetesDaemonSet `json:"_source"`
+	Sort    []interface{}       `json:"sort"`
+}
+
+type KubernetesDaemonSetHits struct {
+	Total essdk.SearchTotal        `json:"total"`
+	Hits  []KubernetesDaemonSetHit `json:"hits"`
+}
+
+type KubernetesDaemonSetSearchResponse struct {
+	PitID string                  `json:"pit_id"`
+	Hits  KubernetesDaemonSetHits `json:"hits"`
+}
+
+type KubernetesDaemonSetPaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesDaemonSetPaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesDaemonSetPaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_daemonset", filters, limit)
+	if err != nil {
+		return KubernetesDaemonSetPaginator{}, err
+	}
+
+	p := KubernetesDaemonSetPaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesDaemonSetPaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesDaemonSetPaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesDaemonSetPaginator) NextPage(ctx context.Context) ([]KubernetesDaemonSet, error) {
+	var response KubernetesDaemonSetSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesDaemonSet
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesDaemonSetFilters = map[string]string{
+	"collision_count":          "Status.CollisionCount",
+	"conditions":               "Status.Conditions",
+	"current_number_scheduled": "Status.CurrentNumberScheduled",
+	"desired_number_scheduled": "Status.DesiredNumberScheduled",
+	"min_ready_seconds":        "Spec.MinReadySeconds",
+	"number_available":         "Status.NumberAvailable",
+	"number_misscheduled":      "Status.NumberMisscheduled",
+	"number_ready":             "Status.NumberReady",
+	"number_unavailable":       "Status.NumberUnavailable",
+	"observed_generation":      "Status.ObservedGeneration",
+	"revision_history_limit":   "Spec.RevisionHistoryLimit",
+	"selector":                 "Spec.Volumes",
+	"template":                 "Spec.Template",
+	"title":                    "Name",
+	"update_strategy":          "Spec.UpdateStrategy",
+	"updated_number_scheduled": "Status.UpdatedNumberScheduled",
+}
+
+func ListKubernetesDaemonSet(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesDaemonSet")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesDaemonSet NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesDaemonSet NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesDaemonSet GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesDaemonSet GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesDaemonSet GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesDaemonSetPaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesDaemonSetFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesDaemonSet NewKubernetesDaemonSetPaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesDaemonSet paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesDaemonSetFilters = map[string]string{
+	"collision_count":          "Status.CollisionCount",
+	"conditions":               "Status.Conditions",
+	"current_number_scheduled": "Status.CurrentNumberScheduled",
+	"desired_number_scheduled": "Status.DesiredNumberScheduled",
+	"min_ready_seconds":        "Spec.MinReadySeconds",
+	"number_available":         "Status.NumberAvailable",
+	"number_misscheduled":      "Status.NumberMisscheduled",
+	"number_ready":             "Status.NumberReady",
+	"number_unavailable":       "Status.NumberUnavailable",
+	"observed_generation":      "Status.ObservedGeneration",
+	"revision_history_limit":   "Spec.RevisionHistoryLimit",
+	"selector":                 "Spec.Volumes",
+	"template":                 "Spec.Template",
+	"title":                    "Name",
+	"update_strategy":          "Spec.UpdateStrategy",
+	"updated_number_scheduled": "Status.UpdatedNumberScheduled",
+}
+
+func GetKubernetesDaemonSet(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesDaemonSet")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesDaemonSetPaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesDaemonSetFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesDaemonSet =============================
+
+// ==========================  START: KubernetesDeployment =============================
+
+type KubernetesDeployment struct {
+	ResourceID      string                                     `json:"resource_id"`
+	PlatformID      string                                     `json:"platform_id"`
+	Description     kubernetes.KubernetesDeploymentDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                        `json:"metadata"`
+	DescribedBy     string                                     `json:"described_by"`
+	ResourceType    string                                     `json:"resource_type"`
+	IntegrationType string                                     `json:"integration_type"`
+	IntegrationID   string                                     `json:"integration_id"`
+}
+
+type KubernetesDeploymentHit struct {
+	ID      string               `json:"_id"`
+	Score   float64              `json:"_score"`
+	Index   string               `json:"_index"`
+	Type    string               `json:"_type"`
+	Version int64                `json:"_version,omitempty"`
+	Source  KubernetesDeployment `json:"_source"`
+	Sort    []interface{}        `json:"sort"`
+}
+
+type KubernetesDeploymentHits struct {
+	Total essdk.SearchTotal         `json:"total"`
+	Hits  []KubernetesDeploymentHit `json:"hits"`
+}
+
+type KubernetesDeploymentSearchResponse struct {
+	PitID string                   `json:"pit_id"`
+	Hits  KubernetesDeploymentHits `json:"hits"`
+}
+
+type KubernetesDeploymentPaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesDeploymentPaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesDeploymentPaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_deployment", filters, limit)
+	if err != nil {
+		return KubernetesDeploymentPaginator{}, err
+	}
+
+	p := KubernetesDeploymentPaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesDeploymentPaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesDeploymentPaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesDeploymentPaginator) NextPage(ctx context.Context) ([]KubernetesDeployment, error) {
+	var response KubernetesDeploymentSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesDeployment
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesDeploymentFilters = map[string]string{
+	"available_replicas":        "Description.Deployment.Status.AvailableReplicas",
+	"collision_count":           "Description.Deployment.Status.CollisionCount",
+	"conditions":                "Description.Deployment.Status.Conditions",
+	"min_ready_seconds":         "Description.Deployment.Spec.MinReadySeconds",
+	"observed_generation":       "Description.Deployment.Status.ObservedGeneration",
+	"paused":                    "Description.Deployment.Spec.Paused",
+	"progress_deadline_seconds": "Description.Deployment.Spec.ProgressDeadlineSeconds",
+	"ready_replicas":            "Description.Deployment.Status.ReadyReplicas",
+	"replicas":                  "Description.Deployment.Spec.Replicas",
+	"revision_history_limit":    "Description.Deployment.Spec.RevisionHistoryLimit",
+	"selector":                  "Description.Deployment.Spec.Selector",
+	"status_replicas":           "Description.Deployment.Status.Replicas",
+	"strategy":                  "Description.Deployment.Spec.Strategy",
+	"template":                  "Description.Deployment.Spec.Template",
+	"title":                     "Description.Deployment.Name",
+	"unavailable_replicas":      "Description.Deployment.Status.UnavailableReplicas",
+	"updated_replicas":          "Description.Deployment.Status.UpdatedReplicas",
+}
+
+func ListKubernetesDeployment(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesDeployment")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesDeployment NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesDeployment NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesDeployment GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesDeployment GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesDeployment GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesDeploymentPaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesDeploymentFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesDeployment NewKubernetesDeploymentPaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesDeployment paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesDeploymentFilters = map[string]string{
+	"available_replicas":        "Description.Deployment.Status.AvailableReplicas",
+	"collision_count":           "Description.Deployment.Status.CollisionCount",
+	"conditions":                "Description.Deployment.Status.Conditions",
+	"min_ready_seconds":         "Description.Deployment.Spec.MinReadySeconds",
+	"observed_generation":       "Description.Deployment.Status.ObservedGeneration",
+	"paused":                    "Description.Deployment.Spec.Paused",
+	"progress_deadline_seconds": "Description.Deployment.Spec.ProgressDeadlineSeconds",
+	"ready_replicas":            "Description.Deployment.Status.ReadyReplicas",
+	"replicas":                  "Description.Deployment.Spec.Replicas",
+	"revision_history_limit":    "Description.Deployment.Spec.RevisionHistoryLimit",
+	"selector":                  "Description.Deployment.Spec.Selector",
+	"status_replicas":           "Description.Deployment.Status.Replicas",
+	"strategy":                  "Description.Deployment.Spec.Strategy",
+	"template":                  "Description.Deployment.Spec.Template",
+	"title":                     "Description.Deployment.Name",
+	"unavailable_replicas":      "Description.Deployment.Status.UnavailableReplicas",
+	"updated_replicas":          "Description.Deployment.Status.UpdatedReplicas",
+}
+
+func GetKubernetesDeployment(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesDeployment")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesDeploymentPaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesDeploymentFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesDeployment =============================
+
+// ==========================  START: KubernetesEndpointSlice =============================
+
+type KubernetesEndpointSlice struct {
+	ResourceID      string                                        `json:"resource_id"`
+	PlatformID      string                                        `json:"platform_id"`
+	Description     kubernetes.KubernetesEndpointSliceDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                           `json:"metadata"`
+	DescribedBy     string                                        `json:"described_by"`
+	ResourceType    string                                        `json:"resource_type"`
+	IntegrationType string                                        `json:"integration_type"`
+	IntegrationID   string                                        `json:"integration_id"`
+}
+
+type KubernetesEndpointSliceHit struct {
+	ID      string                  `json:"_id"`
+	Score   float64                 `json:"_score"`
+	Index   string                  `json:"_index"`
+	Type    string                  `json:"_type"`
+	Version int64                   `json:"_version,omitempty"`
+	Source  KubernetesEndpointSlice `json:"_source"`
+	Sort    []interface{}           `json:"sort"`
+}
+
+type KubernetesEndpointSliceHits struct {
+	Total essdk.SearchTotal            `json:"total"`
+	Hits  []KubernetesEndpointSliceHit `json:"hits"`
+}
+
+type KubernetesEndpointSliceSearchResponse struct {
+	PitID string                      `json:"pit_id"`
+	Hits  KubernetesEndpointSliceHits `json:"hits"`
+}
+
+type KubernetesEndpointSlicePaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesEndpointSlicePaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesEndpointSlicePaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_endpointslice", filters, limit)
+	if err != nil {
+		return KubernetesEndpointSlicePaginator{}, err
+	}
+
+	p := KubernetesEndpointSlicePaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesEndpointSlicePaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesEndpointSlicePaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesEndpointSlicePaginator) NextPage(ctx context.Context) ([]KubernetesEndpointSlice, error) {
+	var response KubernetesEndpointSliceSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesEndpointSlice
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesEndpointSliceFilters = map[string]string{
+	"title": "Name",
+}
+
+func ListKubernetesEndpointSlice(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesEndpointSlice")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesEndpointSlice NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesEndpointSlice NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesEndpointSlice GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesEndpointSlice GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesEndpointSlice GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesEndpointSlicePaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesEndpointSliceFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesEndpointSlice NewKubernetesEndpointSlicePaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesEndpointSlice paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesEndpointSliceFilters = map[string]string{
+	"title": "Name",
+}
+
+func GetKubernetesEndpointSlice(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesEndpointSlice")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesEndpointSlicePaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesEndpointSliceFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesEndpointSlice =============================
+
+// ==========================  START: KubernetesEndpoint =============================
+
+type KubernetesEndpoint struct {
+	ResourceID      string                                   `json:"resource_id"`
+	PlatformID      string                                   `json:"platform_id"`
+	Description     kubernetes.KubernetesEndpointDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                      `json:"metadata"`
+	DescribedBy     string                                   `json:"described_by"`
+	ResourceType    string                                   `json:"resource_type"`
+	IntegrationType string                                   `json:"integration_type"`
+	IntegrationID   string                                   `json:"integration_id"`
+}
+
+type KubernetesEndpointHit struct {
+	ID      string             `json:"_id"`
+	Score   float64            `json:"_score"`
+	Index   string             `json:"_index"`
+	Type    string             `json:"_type"`
+	Version int64              `json:"_version,omitempty"`
+	Source  KubernetesEndpoint `json:"_source"`
+	Sort    []interface{}      `json:"sort"`
+}
+
+type KubernetesEndpointHits struct {
+	Total essdk.SearchTotal       `json:"total"`
+	Hits  []KubernetesEndpointHit `json:"hits"`
+}
+
+type KubernetesEndpointSearchResponse struct {
+	PitID string                 `json:"pit_id"`
+	Hits  KubernetesEndpointHits `json:"hits"`
+}
+
+type KubernetesEndpointPaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesEndpointPaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesEndpointPaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_endpoint", filters, limit)
+	if err != nil {
+		return KubernetesEndpointPaginator{}, err
+	}
+
+	p := KubernetesEndpointPaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesEndpointPaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesEndpointPaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesEndpointPaginator) NextPage(ctx context.Context) ([]KubernetesEndpoint, error) {
+	var response KubernetesEndpointSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesEndpoint
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesEndpointFilters = map[string]string{
+	"title": "Name",
+}
+
+func ListKubernetesEndpoint(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesEndpoint")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesEndpoint NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesEndpoint NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesEndpoint GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesEndpoint GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesEndpoint GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesEndpointPaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesEndpointFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesEndpoint NewKubernetesEndpointPaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesEndpoint paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesEndpointFilters = map[string]string{
+	"title": "Name",
+}
+
+func GetKubernetesEndpoint(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesEndpoint")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesEndpointPaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesEndpointFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesEndpoint =============================
+
+// ==========================  START: KubernetesEvent =============================
+
+type KubernetesEvent struct {
+	ResourceID      string                                `json:"resource_id"`
+	PlatformID      string                                `json:"platform_id"`
+	Description     kubernetes.KubernetesEventDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                   `json:"metadata"`
+	DescribedBy     string                                `json:"described_by"`
+	ResourceType    string                                `json:"resource_type"`
+	IntegrationType string                                `json:"integration_type"`
+	IntegrationID   string                                `json:"integration_id"`
+}
+
+type KubernetesEventHit struct {
+	ID      string          `json:"_id"`
+	Score   float64         `json:"_score"`
+	Index   string          `json:"_index"`
+	Type    string          `json:"_type"`
+	Version int64           `json:"_version,omitempty"`
+	Source  KubernetesEvent `json:"_source"`
+	Sort    []interface{}   `json:"sort"`
+}
+
+type KubernetesEventHits struct {
+	Total essdk.SearchTotal    `json:"total"`
+	Hits  []KubernetesEventHit `json:"hits"`
+}
+
+type KubernetesEventSearchResponse struct {
+	PitID string              `json:"pit_id"`
+	Hits  KubernetesEventHits `json:"hits"`
+}
+
+type KubernetesEventPaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesEventPaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesEventPaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_event", filters, limit)
+	if err != nil {
+		return KubernetesEventPaginator{}, err
+	}
+
+	p := KubernetesEventPaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesEventPaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesEventPaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesEventPaginator) NextPage(ctx context.Context) ([]KubernetesEvent, error) {
+	var response KubernetesEventSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesEvent
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesEventFilters = map[string]string{
+	"involved_object":     "InvolvedObject",
+	"reporting_component": "ReportingComponent",
+	"reporting_instance":  "ReportingInstance",
+}
+
+func ListKubernetesEvent(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesEvent")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesEvent NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesEvent NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesEvent GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesEvent GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesEvent GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesEventPaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesEventFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesEvent NewKubernetesEventPaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesEvent paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesEventFilters = map[string]string{
+	"involved_object":     "InvolvedObject",
+	"reporting_component": "ReportingComponent",
+	"reporting_instance":  "ReportingInstance",
+}
+
+func GetKubernetesEvent(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesEvent")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesEventPaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesEventFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesEvent =============================
+
+// ==========================  START: KubernetesHorizontalPodAutoscaler =============================
+
+type KubernetesHorizontalPodAutoscaler struct {
+	ResourceID      string                                                  `json:"resource_id"`
+	PlatformID      string                                                  `json:"platform_id"`
+	Description     kubernetes.KubernetesHorizontalPodAutoscalerDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                                     `json:"metadata"`
+	DescribedBy     string                                                  `json:"described_by"`
+	ResourceType    string                                                  `json:"resource_type"`
+	IntegrationType string                                                  `json:"integration_type"`
+	IntegrationID   string                                                  `json:"integration_id"`
+}
+
+type KubernetesHorizontalPodAutoscalerHit struct {
+	ID      string                            `json:"_id"`
+	Score   float64                           `json:"_score"`
+	Index   string                            `json:"_index"`
+	Type    string                            `json:"_type"`
+	Version int64                             `json:"_version,omitempty"`
+	Source  KubernetesHorizontalPodAutoscaler `json:"_source"`
+	Sort    []interface{}                     `json:"sort"`
+}
+
+type KubernetesHorizontalPodAutoscalerHits struct {
+	Total essdk.SearchTotal                      `json:"total"`
+	Hits  []KubernetesHorizontalPodAutoscalerHit `json:"hits"`
+}
+
+type KubernetesHorizontalPodAutoscalerSearchResponse struct {
+	PitID string                                `json:"pit_id"`
+	Hits  KubernetesHorizontalPodAutoscalerHits `json:"hits"`
+}
+
+type KubernetesHorizontalPodAutoscalerPaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesHorizontalPodAutoscalerPaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesHorizontalPodAutoscalerPaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_horizontalpodautoscaler", filters, limit)
+	if err != nil {
+		return KubernetesHorizontalPodAutoscalerPaginator{}, err
+	}
+
+	p := KubernetesHorizontalPodAutoscalerPaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesHorizontalPodAutoscalerPaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesHorizontalPodAutoscalerPaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesHorizontalPodAutoscalerPaginator) NextPage(ctx context.Context) ([]KubernetesHorizontalPodAutoscaler, error) {
+	var response KubernetesHorizontalPodAutoscalerSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesHorizontalPodAutoscaler
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesHorizontalPodAutoscalerFilters = map[string]string{
+	"conditions":          "Status.Conditions",
+	"current_metrics":     "Status.CurrentMetrics",
+	"current_replicas":    "Status.CurrentReplicas",
+	"desired_replicas":    "Status.DesiredReplicas",
+	"max_replicas":        "Spec.MaxReplicas",
+	"metrics":             "Spec.Metrics",
+	"min_replicas":        "Spec.MinReplicas",
+	"observed_generation": "Status.ObservedGeneration",
+	"scale_down_behavior": "Spec.Behavior.ScaleDown",
+	"scale_target_ref":    "Spec.ScaleTargetRef",
+	"scale_up_behavior":   "Spec.Behavior.ScaleUp",
+	"title":               "Name",
+}
+
+func ListKubernetesHorizontalPodAutoscaler(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesHorizontalPodAutoscaler")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesHorizontalPodAutoscaler NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesHorizontalPodAutoscaler NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesHorizontalPodAutoscaler GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesHorizontalPodAutoscaler GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesHorizontalPodAutoscaler GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesHorizontalPodAutoscalerPaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesHorizontalPodAutoscalerFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesHorizontalPodAutoscaler NewKubernetesHorizontalPodAutoscalerPaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesHorizontalPodAutoscaler paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesHorizontalPodAutoscalerFilters = map[string]string{
+	"conditions":          "Status.Conditions",
+	"current_metrics":     "Status.CurrentMetrics",
+	"current_replicas":    "Status.CurrentReplicas",
+	"desired_replicas":    "Status.DesiredReplicas",
+	"max_replicas":        "Spec.MaxReplicas",
+	"metrics":             "Spec.Metrics",
+	"min_replicas":        "Spec.MinReplicas",
+	"observed_generation": "Status.ObservedGeneration",
+	"scale_down_behavior": "Spec.Behavior.ScaleDown",
+	"scale_target_ref":    "Spec.ScaleTargetRef",
+	"scale_up_behavior":   "Spec.Behavior.ScaleUp",
+	"title":               "Name",
+}
+
+func GetKubernetesHorizontalPodAutoscaler(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesHorizontalPodAutoscaler")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesHorizontalPodAutoscalerPaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesHorizontalPodAutoscalerFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesHorizontalPodAutoscaler =============================
+
+// ==========================  START: KubernetesIngress =============================
+
+type KubernetesIngress struct {
+	ResourceID      string                                  `json:"resource_id"`
+	PlatformID      string                                  `json:"platform_id"`
+	Description     kubernetes.KubernetesIngressDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                     `json:"metadata"`
+	DescribedBy     string                                  `json:"described_by"`
+	ResourceType    string                                  `json:"resource_type"`
+	IntegrationType string                                  `json:"integration_type"`
+	IntegrationID   string                                  `json:"integration_id"`
+}
+
+type KubernetesIngressHit struct {
+	ID      string            `json:"_id"`
+	Score   float64           `json:"_score"`
+	Index   string            `json:"_index"`
+	Type    string            `json:"_type"`
+	Version int64             `json:"_version,omitempty"`
+	Source  KubernetesIngress `json:"_source"`
+	Sort    []interface{}     `json:"sort"`
+}
+
+type KubernetesIngressHits struct {
+	Total essdk.SearchTotal      `json:"total"`
+	Hits  []KubernetesIngressHit `json:"hits"`
+}
+
+type KubernetesIngressSearchResponse struct {
+	PitID string                `json:"pit_id"`
+	Hits  KubernetesIngressHits `json:"hits"`
+}
+
+type KubernetesIngressPaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesIngressPaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesIngressPaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_ingress", filters, limit)
+	if err != nil {
+		return KubernetesIngressPaginator{}, err
+	}
+
+	p := KubernetesIngressPaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesIngressPaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesIngressPaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesIngressPaginator) NextPage(ctx context.Context) ([]KubernetesIngress, error) {
+	var response KubernetesIngressSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesIngress
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesIngressFilters = map[string]string{
+	"default_backend":    "Spec.DefaultBackend",
+	"ingress_class_name": "Spec.IngressClassName",
+	"load_balancer":      "Status.LoadBalancer.Ingress",
+	"rules":              "Spec.Rules",
+	"title":              "Name",
+	"tls":                "Spec.TLS",
+}
+
+func ListKubernetesIngress(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesIngress")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesIngress NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesIngress NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesIngress GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesIngress GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesIngress GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesIngressPaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesIngressFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesIngress NewKubernetesIngressPaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesIngress paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesIngressFilters = map[string]string{
+	"default_backend":    "Spec.DefaultBackend",
+	"ingress_class_name": "Spec.IngressClassName",
+	"load_balancer":      "Status.LoadBalancer.Ingress",
+	"rules":              "Spec.Rules",
+	"title":              "Name",
+	"tls":                "Spec.TLS",
+}
+
+func GetKubernetesIngress(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesIngress")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesIngressPaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesIngressFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesIngress =============================
+
+// ==========================  START: KubernetesJob =============================
+
+type KubernetesJob struct {
+	ResourceID      string                              `json:"resource_id"`
+	PlatformID      string                              `json:"platform_id"`
+	Description     kubernetes.KubernetesJobDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                 `json:"metadata"`
+	DescribedBy     string                              `json:"described_by"`
+	ResourceType    string                              `json:"resource_type"`
+	IntegrationType string                              `json:"integration_type"`
+	IntegrationID   string                              `json:"integration_id"`
+}
+
+type KubernetesJobHit struct {
+	ID      string        `json:"_id"`
+	Score   float64       `json:"_score"`
+	Index   string        `json:"_index"`
+	Type    string        `json:"_type"`
+	Version int64         `json:"_version,omitempty"`
+	Source  KubernetesJob `json:"_source"`
+	Sort    []interface{} `json:"sort"`
+}
+
+type KubernetesJobHits struct {
+	Total essdk.SearchTotal  `json:"total"`
+	Hits  []KubernetesJobHit `json:"hits"`
+}
+
+type KubernetesJobSearchResponse struct {
+	PitID string            `json:"pit_id"`
+	Hits  KubernetesJobHits `json:"hits"`
+}
+
+type KubernetesJobPaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesJobPaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesJobPaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_job", filters, limit)
+	if err != nil {
+		return KubernetesJobPaginator{}, err
+	}
+
+	p := KubernetesJobPaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesJobPaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesJobPaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesJobPaginator) NextPage(ctx context.Context) ([]KubernetesJob, error) {
+	var response KubernetesJobSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesJob
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesJobFilters = map[string]string{
+	"active":                     "Status.Active",
+	"active_deadline_seconds":    "Spec.ActiveDeadlineSeconds",
+	"backoff_limit":              "Spec.BackoffLimit",
+	"completions":                "Spec.Completions",
+	"conditions":                 "Status.Conditions",
+	"failed":                     "Status.Failed",
+	"manual_selector":            "Spec.ManualSelector",
+	"parallelism":                "Spec.Parallelism",
+	"selector":                   "Spec.Selector",
+	"succeeded":                  "Status.Succeeded",
+	"template":                   "Spec.Template",
+	"title":                      "Name",
+	"ttl_seconds_after_finished": "Spec.TTLSecondsAfterFinished",
+}
+
+func ListKubernetesJob(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesJob")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesJob NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesJob NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesJob GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesJob GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesJob GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesJobPaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesJobFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesJob NewKubernetesJobPaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesJob paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesJobFilters = map[string]string{
+	"active":                     "Status.Active",
+	"active_deadline_seconds":    "Spec.ActiveDeadlineSeconds",
+	"backoff_limit":              "Spec.BackoffLimit",
+	"completions":                "Spec.Completions",
+	"conditions":                 "Status.Conditions",
+	"failed":                     "Status.Failed",
+	"manual_selector":            "Spec.ManualSelector",
+	"parallelism":                "Spec.Parallelism",
+	"selector":                   "Spec.Selector",
+	"succeeded":                  "Status.Succeeded",
+	"template":                   "Spec.Template",
+	"title":                      "Name",
+	"ttl_seconds_after_finished": "Spec.TTLSecondsAfterFinished",
+}
+
+func GetKubernetesJob(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesJob")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesJobPaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesJobFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesJob =============================
+
+// ==========================  START: KubernetesLimitRange =============================
+
+type KubernetesLimitRange struct {
+	ResourceID      string                                     `json:"resource_id"`
+	PlatformID      string                                     `json:"platform_id"`
+	Description     kubernetes.KubernetesLimitRangeDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                        `json:"metadata"`
+	DescribedBy     string                                     `json:"described_by"`
+	ResourceType    string                                     `json:"resource_type"`
+	IntegrationType string                                     `json:"integration_type"`
+	IntegrationID   string                                     `json:"integration_id"`
+}
+
+type KubernetesLimitRangeHit struct {
+	ID      string               `json:"_id"`
+	Score   float64              `json:"_score"`
+	Index   string               `json:"_index"`
+	Type    string               `json:"_type"`
+	Version int64                `json:"_version,omitempty"`
+	Source  KubernetesLimitRange `json:"_source"`
+	Sort    []interface{}        `json:"sort"`
+}
+
+type KubernetesLimitRangeHits struct {
+	Total essdk.SearchTotal         `json:"total"`
+	Hits  []KubernetesLimitRangeHit `json:"hits"`
+}
+
+type KubernetesLimitRangeSearchResponse struct {
+	PitID string                   `json:"pit_id"`
+	Hits  KubernetesLimitRangeHits `json:"hits"`
+}
+
+type KubernetesLimitRangePaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesLimitRangePaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesLimitRangePaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_limitrange", filters, limit)
+	if err != nil {
+		return KubernetesLimitRangePaginator{}, err
+	}
+
+	p := KubernetesLimitRangePaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesLimitRangePaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesLimitRangePaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesLimitRangePaginator) NextPage(ctx context.Context) ([]KubernetesLimitRange, error) {
+	var response KubernetesLimitRangeSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesLimitRange
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesLimitRangeFilters = map[string]string{
+	"spec_limits": "Spec.Limits",
+	"title":       "Name",
+}
+
+func ListKubernetesLimitRange(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesLimitRange")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesLimitRange NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesLimitRange NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesLimitRange GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesLimitRange GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesLimitRange GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesLimitRangePaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesLimitRangeFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesLimitRange NewKubernetesLimitRangePaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesLimitRange paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesLimitRangeFilters = map[string]string{
+	"spec_limits": "Spec.Limits",
+	"title":       "Name",
+}
+
+func GetKubernetesLimitRange(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesLimitRange")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesLimitRangePaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesLimitRangeFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesLimitRange =============================
+
+// ==========================  START: KubernetesNamespace =============================
+
+type KubernetesNamespace struct {
+	ResourceID      string                                    `json:"resource_id"`
+	PlatformID      string                                    `json:"platform_id"`
+	Description     kubernetes.KubernetesNamespaceDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                       `json:"metadata"`
+	DescribedBy     string                                    `json:"described_by"`
+	ResourceType    string                                    `json:"resource_type"`
+	IntegrationType string                                    `json:"integration_type"`
+	IntegrationID   string                                    `json:"integration_id"`
+}
+
+type KubernetesNamespaceHit struct {
+	ID      string              `json:"_id"`
+	Score   float64             `json:"_score"`
+	Index   string              `json:"_index"`
+	Type    string              `json:"_type"`
+	Version int64               `json:"_version,omitempty"`
+	Source  KubernetesNamespace `json:"_source"`
+	Sort    []interface{}       `json:"sort"`
+}
+
+type KubernetesNamespaceHits struct {
+	Total essdk.SearchTotal        `json:"total"`
+	Hits  []KubernetesNamespaceHit `json:"hits"`
+}
+
+type KubernetesNamespaceSearchResponse struct {
+	PitID string                  `json:"pit_id"`
+	Hits  KubernetesNamespaceHits `json:"hits"`
+}
+
+type KubernetesNamespacePaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesNamespacePaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesNamespacePaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_namespace", filters, limit)
+	if err != nil {
+		return KubernetesNamespacePaginator{}, err
+	}
+
+	p := KubernetesNamespacePaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesNamespacePaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesNamespacePaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesNamespacePaginator) NextPage(ctx context.Context) ([]KubernetesNamespace, error) {
+	var response KubernetesNamespaceSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesNamespace
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesNamespaceFilters = map[string]string{
+	"conditions":      "Status.NamespaceCondition",
+	"phase":           "Status.Phase",
+	"spec_finalizers": "Spec.Finalizers",
+	"title":           "Name",
+}
+
+func ListKubernetesNamespace(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesNamespace")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesNamespace NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesNamespace NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesNamespace GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesNamespace GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesNamespace GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesNamespacePaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesNamespaceFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesNamespace NewKubernetesNamespacePaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesNamespace paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesNamespaceFilters = map[string]string{
+	"conditions":      "Status.NamespaceCondition",
+	"phase":           "Status.Phase",
+	"spec_finalizers": "Spec.Finalizers",
+	"title":           "Name",
+}
+
+func GetKubernetesNamespace(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesNamespace")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesNamespacePaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesNamespaceFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesNamespace =============================
+
+// ==========================  START: KubernetesNetworkPolicy =============================
+
+type KubernetesNetworkPolicy struct {
+	ResourceID      string                                        `json:"resource_id"`
+	PlatformID      string                                        `json:"platform_id"`
+	Description     kubernetes.KubernetesNetworkPolicyDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                           `json:"metadata"`
+	DescribedBy     string                                        `json:"described_by"`
+	ResourceType    string                                        `json:"resource_type"`
+	IntegrationType string                                        `json:"integration_type"`
+	IntegrationID   string                                        `json:"integration_id"`
+}
+
+type KubernetesNetworkPolicyHit struct {
+	ID      string                  `json:"_id"`
+	Score   float64                 `json:"_score"`
+	Index   string                  `json:"_index"`
+	Type    string                  `json:"_type"`
+	Version int64                   `json:"_version,omitempty"`
+	Source  KubernetesNetworkPolicy `json:"_source"`
+	Sort    []interface{}           `json:"sort"`
+}
+
+type KubernetesNetworkPolicyHits struct {
+	Total essdk.SearchTotal            `json:"total"`
+	Hits  []KubernetesNetworkPolicyHit `json:"hits"`
+}
+
+type KubernetesNetworkPolicySearchResponse struct {
+	PitID string                      `json:"pit_id"`
+	Hits  KubernetesNetworkPolicyHits `json:"hits"`
+}
+
+type KubernetesNetworkPolicyPaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesNetworkPolicyPaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesNetworkPolicyPaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_networkpolicy", filters, limit)
+	if err != nil {
+		return KubernetesNetworkPolicyPaginator{}, err
+	}
+
+	p := KubernetesNetworkPolicyPaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesNetworkPolicyPaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesNetworkPolicyPaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesNetworkPolicyPaginator) NextPage(ctx context.Context) ([]KubernetesNetworkPolicy, error) {
+	var response KubernetesNetworkPolicySearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesNetworkPolicy
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesNetworkPolicyFilters = map[string]string{
+	"egress":       "Spec.Egress",
+	"ingress":      "Spec.Ingress",
+	"pod_selector": "Spec.PodSelector",
+	"policy_types": "Spec.PolicyTypes",
+	"title":        "Name",
+}
+
+func ListKubernetesNetworkPolicy(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesNetworkPolicy")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesNetworkPolicy NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesNetworkPolicy NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesNetworkPolicy GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesNetworkPolicy GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesNetworkPolicy GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesNetworkPolicyPaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesNetworkPolicyFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesNetworkPolicy NewKubernetesNetworkPolicyPaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesNetworkPolicy paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesNetworkPolicyFilters = map[string]string{
+	"egress":       "Spec.Egress",
+	"ingress":      "Spec.Ingress",
+	"pod_selector": "Spec.PodSelector",
+	"policy_types": "Spec.PolicyTypes",
+	"title":        "Name",
+}
+
+func GetKubernetesNetworkPolicy(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesNetworkPolicy")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesNetworkPolicyPaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesNetworkPolicyFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesNetworkPolicy =============================
+
 // ==========================  START: KubernetesNode =============================
 
 type KubernetesNode struct {
@@ -998,6 +4603,1696 @@ func GetKubernetesPod(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 
 // ==========================  END: KubernetesPod =============================
 
+// ==========================  START: KubernetesPodDisruptionBudget =============================
+
+type KubernetesPodDisruptionBudget struct {
+	ResourceID      string                                              `json:"resource_id"`
+	PlatformID      string                                              `json:"platform_id"`
+	Description     kubernetes.KubernetesPodDisruptionBudgetDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                                 `json:"metadata"`
+	DescribedBy     string                                              `json:"described_by"`
+	ResourceType    string                                              `json:"resource_type"`
+	IntegrationType string                                              `json:"integration_type"`
+	IntegrationID   string                                              `json:"integration_id"`
+}
+
+type KubernetesPodDisruptionBudgetHit struct {
+	ID      string                        `json:"_id"`
+	Score   float64                       `json:"_score"`
+	Index   string                        `json:"_index"`
+	Type    string                        `json:"_type"`
+	Version int64                         `json:"_version,omitempty"`
+	Source  KubernetesPodDisruptionBudget `json:"_source"`
+	Sort    []interface{}                 `json:"sort"`
+}
+
+type KubernetesPodDisruptionBudgetHits struct {
+	Total essdk.SearchTotal                  `json:"total"`
+	Hits  []KubernetesPodDisruptionBudgetHit `json:"hits"`
+}
+
+type KubernetesPodDisruptionBudgetSearchResponse struct {
+	PitID string                            `json:"pit_id"`
+	Hits  KubernetesPodDisruptionBudgetHits `json:"hits"`
+}
+
+type KubernetesPodDisruptionBudgetPaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesPodDisruptionBudgetPaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesPodDisruptionBudgetPaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_poddisruptionbudget", filters, limit)
+	if err != nil {
+		return KubernetesPodDisruptionBudgetPaginator{}, err
+	}
+
+	p := KubernetesPodDisruptionBudgetPaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesPodDisruptionBudgetPaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesPodDisruptionBudgetPaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesPodDisruptionBudgetPaginator) NextPage(ctx context.Context) ([]KubernetesPodDisruptionBudget, error) {
+	var response KubernetesPodDisruptionBudgetSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesPodDisruptionBudget
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesPodDisruptionBudgetFilters = map[string]string{
+	"max_unavailable": "Spec.MaxUnavailable",
+	"min_available":   "Spec.MinAvailable",
+	"selector":        "Spec.Selector",
+	"title":           "Name",
+}
+
+func ListKubernetesPodDisruptionBudget(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesPodDisruptionBudget")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesPodDisruptionBudget NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesPodDisruptionBudget NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesPodDisruptionBudget GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesPodDisruptionBudget GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesPodDisruptionBudget GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesPodDisruptionBudgetPaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesPodDisruptionBudgetFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesPodDisruptionBudget NewKubernetesPodDisruptionBudgetPaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesPodDisruptionBudget paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesPodDisruptionBudgetFilters = map[string]string{
+	"max_unavailable": "Spec.MaxUnavailable",
+	"min_available":   "Spec.MinAvailable",
+	"selector":        "Spec.Selector",
+	"title":           "Name",
+}
+
+func GetKubernetesPodDisruptionBudget(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesPodDisruptionBudget")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesPodDisruptionBudgetPaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesPodDisruptionBudgetFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesPodDisruptionBudget =============================
+
+// ==========================  START: KubernetesPodTemplate =============================
+
+type KubernetesPodTemplate struct {
+	ResourceID      string                                      `json:"resource_id"`
+	PlatformID      string                                      `json:"platform_id"`
+	Description     kubernetes.KubernetesPodTemplateDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                         `json:"metadata"`
+	DescribedBy     string                                      `json:"described_by"`
+	ResourceType    string                                      `json:"resource_type"`
+	IntegrationType string                                      `json:"integration_type"`
+	IntegrationID   string                                      `json:"integration_id"`
+}
+
+type KubernetesPodTemplateHit struct {
+	ID      string                `json:"_id"`
+	Score   float64               `json:"_score"`
+	Index   string                `json:"_index"`
+	Type    string                `json:"_type"`
+	Version int64                 `json:"_version,omitempty"`
+	Source  KubernetesPodTemplate `json:"_source"`
+	Sort    []interface{}         `json:"sort"`
+}
+
+type KubernetesPodTemplateHits struct {
+	Total essdk.SearchTotal          `json:"total"`
+	Hits  []KubernetesPodTemplateHit `json:"hits"`
+}
+
+type KubernetesPodTemplateSearchResponse struct {
+	PitID string                    `json:"pit_id"`
+	Hits  KubernetesPodTemplateHits `json:"hits"`
+}
+
+type KubernetesPodTemplatePaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesPodTemplatePaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesPodTemplatePaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_podtemplate", filters, limit)
+	if err != nil {
+		return KubernetesPodTemplatePaginator{}, err
+	}
+
+	p := KubernetesPodTemplatePaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesPodTemplatePaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesPodTemplatePaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesPodTemplatePaginator) NextPage(ctx context.Context) ([]KubernetesPodTemplate, error) {
+	var response KubernetesPodTemplateSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesPodTemplate
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesPodTemplateFilters = map[string]string{
+	"title": "Name",
+}
+
+func ListKubernetesPodTemplate(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesPodTemplate")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesPodTemplate NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesPodTemplate NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesPodTemplate GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesPodTemplate GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesPodTemplate GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesPodTemplatePaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesPodTemplateFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesPodTemplate NewKubernetesPodTemplatePaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesPodTemplate paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesPodTemplateFilters = map[string]string{
+	"title": "Name",
+}
+
+func GetKubernetesPodTemplate(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesPodTemplate")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesPodTemplatePaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesPodTemplateFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesPodTemplate =============================
+
+// ==========================  START: KubernetesReplicaSet =============================
+
+type KubernetesReplicaSet struct {
+	ResourceID      string                                     `json:"resource_id"`
+	PlatformID      string                                     `json:"platform_id"`
+	Description     kubernetes.KubernetesReplicaSetDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                        `json:"metadata"`
+	DescribedBy     string                                     `json:"described_by"`
+	ResourceType    string                                     `json:"resource_type"`
+	IntegrationType string                                     `json:"integration_type"`
+	IntegrationID   string                                     `json:"integration_id"`
+}
+
+type KubernetesReplicaSetHit struct {
+	ID      string               `json:"_id"`
+	Score   float64              `json:"_score"`
+	Index   string               `json:"_index"`
+	Type    string               `json:"_type"`
+	Version int64                `json:"_version,omitempty"`
+	Source  KubernetesReplicaSet `json:"_source"`
+	Sort    []interface{}        `json:"sort"`
+}
+
+type KubernetesReplicaSetHits struct {
+	Total essdk.SearchTotal         `json:"total"`
+	Hits  []KubernetesReplicaSetHit `json:"hits"`
+}
+
+type KubernetesReplicaSetSearchResponse struct {
+	PitID string                   `json:"pit_id"`
+	Hits  KubernetesReplicaSetHits `json:"hits"`
+}
+
+type KubernetesReplicaSetPaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesReplicaSetPaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesReplicaSetPaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_replicaset", filters, limit)
+	if err != nil {
+		return KubernetesReplicaSetPaginator{}, err
+	}
+
+	p := KubernetesReplicaSetPaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesReplicaSetPaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesReplicaSetPaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesReplicaSetPaginator) NextPage(ctx context.Context) ([]KubernetesReplicaSet, error) {
+	var response KubernetesReplicaSetSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesReplicaSet
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesReplicaSetFilters = map[string]string{
+	"available_replicas":     "Status.AvailableReplicas",
+	"conditions":             "Status.Conditions",
+	"fully_labeled_replicas": "Status.FullyLabeledReplicas",
+	"min_ready_seconds":      "Spec.MinReadySeconds",
+	"observed_generation":    "Status.ObservedGeneration",
+	"ready_replicas":         "Status.ReadyReplicas",
+	"replicas":               "Spec.Replicas",
+	"selector":               "Spec.Selector",
+	"status_replicas":        "Status.Replicas",
+	"template":               "Spec.Template",
+	"title":                  "Name",
+}
+
+func ListKubernetesReplicaSet(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesReplicaSet")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesReplicaSet NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesReplicaSet NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesReplicaSet GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesReplicaSet GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesReplicaSet GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesReplicaSetPaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesReplicaSetFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesReplicaSet NewKubernetesReplicaSetPaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesReplicaSet paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesReplicaSetFilters = map[string]string{
+	"available_replicas":     "Status.AvailableReplicas",
+	"conditions":             "Status.Conditions",
+	"fully_labeled_replicas": "Status.FullyLabeledReplicas",
+	"min_ready_seconds":      "Spec.MinReadySeconds",
+	"observed_generation":    "Status.ObservedGeneration",
+	"ready_replicas":         "Status.ReadyReplicas",
+	"replicas":               "Spec.Replicas",
+	"selector":               "Spec.Selector",
+	"status_replicas":        "Status.Replicas",
+	"template":               "Spec.Template",
+	"title":                  "Name",
+}
+
+func GetKubernetesReplicaSet(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesReplicaSet")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesReplicaSetPaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesReplicaSetFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesReplicaSet =============================
+
+// ==========================  START: KubernetesReplicationController =============================
+
+type KubernetesReplicationController struct {
+	ResourceID      string                                                `json:"resource_id"`
+	PlatformID      string                                                `json:"platform_id"`
+	Description     kubernetes.KubernetesReplicationControllerDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                                   `json:"metadata"`
+	DescribedBy     string                                                `json:"described_by"`
+	ResourceType    string                                                `json:"resource_type"`
+	IntegrationType string                                                `json:"integration_type"`
+	IntegrationID   string                                                `json:"integration_id"`
+}
+
+type KubernetesReplicationControllerHit struct {
+	ID      string                          `json:"_id"`
+	Score   float64                         `json:"_score"`
+	Index   string                          `json:"_index"`
+	Type    string                          `json:"_type"`
+	Version int64                           `json:"_version,omitempty"`
+	Source  KubernetesReplicationController `json:"_source"`
+	Sort    []interface{}                   `json:"sort"`
+}
+
+type KubernetesReplicationControllerHits struct {
+	Total essdk.SearchTotal                    `json:"total"`
+	Hits  []KubernetesReplicationControllerHit `json:"hits"`
+}
+
+type KubernetesReplicationControllerSearchResponse struct {
+	PitID string                              `json:"pit_id"`
+	Hits  KubernetesReplicationControllerHits `json:"hits"`
+}
+
+type KubernetesReplicationControllerPaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesReplicationControllerPaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesReplicationControllerPaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_replicationcontroller", filters, limit)
+	if err != nil {
+		return KubernetesReplicationControllerPaginator{}, err
+	}
+
+	p := KubernetesReplicationControllerPaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesReplicationControllerPaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesReplicationControllerPaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesReplicationControllerPaginator) NextPage(ctx context.Context) ([]KubernetesReplicationController, error) {
+	var response KubernetesReplicationControllerSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesReplicationController
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesReplicationControllerFilters = map[string]string{
+	"available_replicas":     "Status.AvailableReplicas",
+	"conditions":             "Status.Conditions",
+	"fully_labeled_replicas": "Status.FullyLabeledReplicas",
+	"min_ready_seconds":      "Spec.MinReadySeconds",
+	"observed_generation":    "Status.ObservedGeneration",
+	"ready_replicas":         "Status.ReadyReplicas",
+	"replicas":               "Spec.Replicas",
+	"selector":               "Spec.Selector",
+	"status_replicas":        "Status.Replicas",
+	"template":               "Spec.Template",
+	"title":                  "Name",
+}
+
+func ListKubernetesReplicationController(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesReplicationController")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesReplicationController NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesReplicationController NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesReplicationController GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesReplicationController GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesReplicationController GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesReplicationControllerPaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesReplicationControllerFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesReplicationController NewKubernetesReplicationControllerPaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesReplicationController paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesReplicationControllerFilters = map[string]string{
+	"available_replicas":     "Status.AvailableReplicas",
+	"conditions":             "Status.Conditions",
+	"fully_labeled_replicas": "Status.FullyLabeledReplicas",
+	"min_ready_seconds":      "Spec.MinReadySeconds",
+	"observed_generation":    "Status.ObservedGeneration",
+	"ready_replicas":         "Status.ReadyReplicas",
+	"replicas":               "Spec.Replicas",
+	"selector":               "Spec.Selector",
+	"status_replicas":        "Status.Replicas",
+	"template":               "Spec.Template",
+	"title":                  "Name",
+}
+
+func GetKubernetesReplicationController(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesReplicationController")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesReplicationControllerPaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesReplicationControllerFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesReplicationController =============================
+
+// ==========================  START: KubernetesResourceQuota =============================
+
+type KubernetesResourceQuota struct {
+	ResourceID      string                                        `json:"resource_id"`
+	PlatformID      string                                        `json:"platform_id"`
+	Description     kubernetes.KubernetesResourceQuotaDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                           `json:"metadata"`
+	DescribedBy     string                                        `json:"described_by"`
+	ResourceType    string                                        `json:"resource_type"`
+	IntegrationType string                                        `json:"integration_type"`
+	IntegrationID   string                                        `json:"integration_id"`
+}
+
+type KubernetesResourceQuotaHit struct {
+	ID      string                  `json:"_id"`
+	Score   float64                 `json:"_score"`
+	Index   string                  `json:"_index"`
+	Type    string                  `json:"_type"`
+	Version int64                   `json:"_version,omitempty"`
+	Source  KubernetesResourceQuota `json:"_source"`
+	Sort    []interface{}           `json:"sort"`
+}
+
+type KubernetesResourceQuotaHits struct {
+	Total essdk.SearchTotal            `json:"total"`
+	Hits  []KubernetesResourceQuotaHit `json:"hits"`
+}
+
+type KubernetesResourceQuotaSearchResponse struct {
+	PitID string                      `json:"pit_id"`
+	Hits  KubernetesResourceQuotaHits `json:"hits"`
+}
+
+type KubernetesResourceQuotaPaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesResourceQuotaPaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesResourceQuotaPaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_ressourcequota", filters, limit)
+	if err != nil {
+		return KubernetesResourceQuotaPaginator{}, err
+	}
+
+	p := KubernetesResourceQuotaPaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesResourceQuotaPaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesResourceQuotaPaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesResourceQuotaPaginator) NextPage(ctx context.Context) ([]KubernetesResourceQuota, error) {
+	var response KubernetesResourceQuotaSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesResourceQuota
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesResourceQuotaFilters = map[string]string{
+	"spec_hard":           "Spec.Hard",
+	"spec_scope_selector": "Spec.ScopeSelector",
+	"spec_scopes":         "Spec.Scopes",
+	"status_hard":         "Status.Hard",
+	"status_used":         "Status.Used",
+	"title":               "Name",
+}
+
+func ListKubernetesResourceQuota(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesResourceQuota")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesResourceQuota NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesResourceQuota NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesResourceQuota GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesResourceQuota GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesResourceQuota GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesResourceQuotaPaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesResourceQuotaFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesResourceQuota NewKubernetesResourceQuotaPaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesResourceQuota paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesResourceQuotaFilters = map[string]string{
+	"spec_hard":           "Spec.Hard",
+	"spec_scope_selector": "Spec.ScopeSelector",
+	"spec_scopes":         "Spec.Scopes",
+	"status_hard":         "Status.Hard",
+	"status_used":         "Status.Used",
+	"title":               "Name",
+}
+
+func GetKubernetesResourceQuota(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesResourceQuota")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesResourceQuotaPaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesResourceQuotaFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesResourceQuota =============================
+
+// ==========================  START: KubernetesRole =============================
+
+type KubernetesRole struct {
+	ResourceID      string                               `json:"resource_id"`
+	PlatformID      string                               `json:"platform_id"`
+	Description     kubernetes.KubernetesRoleDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                  `json:"metadata"`
+	DescribedBy     string                               `json:"described_by"`
+	ResourceType    string                               `json:"resource_type"`
+	IntegrationType string                               `json:"integration_type"`
+	IntegrationID   string                               `json:"integration_id"`
+}
+
+type KubernetesRoleHit struct {
+	ID      string         `json:"_id"`
+	Score   float64        `json:"_score"`
+	Index   string         `json:"_index"`
+	Type    string         `json:"_type"`
+	Version int64          `json:"_version,omitempty"`
+	Source  KubernetesRole `json:"_source"`
+	Sort    []interface{}  `json:"sort"`
+}
+
+type KubernetesRoleHits struct {
+	Total essdk.SearchTotal   `json:"total"`
+	Hits  []KubernetesRoleHit `json:"hits"`
+}
+
+type KubernetesRoleSearchResponse struct {
+	PitID string             `json:"pit_id"`
+	Hits  KubernetesRoleHits `json:"hits"`
+}
+
+type KubernetesRolePaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesRolePaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesRolePaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_role", filters, limit)
+	if err != nil {
+		return KubernetesRolePaginator{}, err
+	}
+
+	p := KubernetesRolePaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesRolePaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesRolePaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesRolePaginator) NextPage(ctx context.Context) ([]KubernetesRole, error) {
+	var response KubernetesRoleSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesRole
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesRoleFilters = map[string]string{
+	"title": "Name",
+}
+
+func ListKubernetesRole(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesRole")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesRole NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesRole NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesRole GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesRole GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesRole GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesRolePaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesRoleFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesRole NewKubernetesRolePaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesRole paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesRoleFilters = map[string]string{
+	"title": "Name",
+}
+
+func GetKubernetesRole(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesRole")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesRolePaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesRoleFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesRole =============================
+
+// ==========================  START: KubernetesRoleBinding =============================
+
+type KubernetesRoleBinding struct {
+	ResourceID      string                                      `json:"resource_id"`
+	PlatformID      string                                      `json:"platform_id"`
+	Description     kubernetes.KubernetesRoleBindingDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                         `json:"metadata"`
+	DescribedBy     string                                      `json:"described_by"`
+	ResourceType    string                                      `json:"resource_type"`
+	IntegrationType string                                      `json:"integration_type"`
+	IntegrationID   string                                      `json:"integration_id"`
+}
+
+type KubernetesRoleBindingHit struct {
+	ID      string                `json:"_id"`
+	Score   float64               `json:"_score"`
+	Index   string                `json:"_index"`
+	Type    string                `json:"_type"`
+	Version int64                 `json:"_version,omitempty"`
+	Source  KubernetesRoleBinding `json:"_source"`
+	Sort    []interface{}         `json:"sort"`
+}
+
+type KubernetesRoleBindingHits struct {
+	Total essdk.SearchTotal          `json:"total"`
+	Hits  []KubernetesRoleBindingHit `json:"hits"`
+}
+
+type KubernetesRoleBindingSearchResponse struct {
+	PitID string                    `json:"pit_id"`
+	Hits  KubernetesRoleBindingHits `json:"hits"`
+}
+
+type KubernetesRoleBindingPaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesRoleBindingPaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesRoleBindingPaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_rolebinding", filters, limit)
+	if err != nil {
+		return KubernetesRoleBindingPaginator{}, err
+	}
+
+	p := KubernetesRoleBindingPaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesRoleBindingPaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesRoleBindingPaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesRoleBindingPaginator) NextPage(ctx context.Context) ([]KubernetesRoleBinding, error) {
+	var response KubernetesRoleBindingSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesRoleBinding
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesRoleBindingFilters = map[string]string{
+	"role_api_group": "RoleRef.APIGroup",
+	"role_kind":      "RoleRef.Kind",
+	"role_name":      "RoleRef.Name",
+	"title":          "Name",
+}
+
+func ListKubernetesRoleBinding(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesRoleBinding")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesRoleBinding NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesRoleBinding NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesRoleBinding GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesRoleBinding GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesRoleBinding GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesRoleBindingPaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesRoleBindingFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesRoleBinding NewKubernetesRoleBindingPaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesRoleBinding paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesRoleBindingFilters = map[string]string{
+	"role_api_group": "RoleRef.APIGroup",
+	"role_kind":      "RoleRef.Kind",
+	"role_name":      "RoleRef.Name",
+	"title":          "Name",
+}
+
+func GetKubernetesRoleBinding(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesRoleBinding")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesRoleBindingPaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesRoleBindingFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesRoleBinding =============================
+
+// ==========================  START: KubernetesSecret =============================
+
+type KubernetesSecret struct {
+	ResourceID      string                                 `json:"resource_id"`
+	PlatformID      string                                 `json:"platform_id"`
+	Description     kubernetes.KubernetesSecretDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                    `json:"metadata"`
+	DescribedBy     string                                 `json:"described_by"`
+	ResourceType    string                                 `json:"resource_type"`
+	IntegrationType string                                 `json:"integration_type"`
+	IntegrationID   string                                 `json:"integration_id"`
+}
+
+type KubernetesSecretHit struct {
+	ID      string           `json:"_id"`
+	Score   float64          `json:"_score"`
+	Index   string           `json:"_index"`
+	Type    string           `json:"_type"`
+	Version int64            `json:"_version,omitempty"`
+	Source  KubernetesSecret `json:"_source"`
+	Sort    []interface{}    `json:"sort"`
+}
+
+type KubernetesSecretHits struct {
+	Total essdk.SearchTotal     `json:"total"`
+	Hits  []KubernetesSecretHit `json:"hits"`
+}
+
+type KubernetesSecretSearchResponse struct {
+	PitID string               `json:"pit_id"`
+	Hits  KubernetesSecretHits `json:"hits"`
+}
+
+type KubernetesSecretPaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesSecretPaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesSecretPaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_secret", filters, limit)
+	if err != nil {
+		return KubernetesSecretPaginator{}, err
+	}
+
+	p := KubernetesSecretPaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesSecretPaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesSecretPaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesSecretPaginator) NextPage(ctx context.Context) ([]KubernetesSecret, error) {
+	var response KubernetesSecretSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesSecret
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesSecretFilters = map[string]string{
+	"immutable": "Description.Secret.Immutable",
+	"title":     "Description.Secret.Name",
+	"type":      "Description.Secret.Type",
+}
+
+func ListKubernetesSecret(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesSecret")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesSecret NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesSecret NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesSecret GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesSecret GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesSecret GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesSecretPaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesSecretFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesSecret NewKubernetesSecretPaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesSecret paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesSecretFilters = map[string]string{
+	"immutable": "Description.Secret.Immutable",
+	"title":     "Description.Secret.Name",
+	"type":      "Description.Secret.Type",
+}
+
+func GetKubernetesSecret(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesSecret")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesSecretPaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesSecretFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesSecret =============================
+
 // ==========================  START: KubernetesService =============================
 
 type KubernetesService struct {
@@ -1231,418 +6526,6 @@ func GetKubernetesService(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 
 // ==========================  END: KubernetesService =============================
 
-// ==========================  START: KubernetesConfigMap =============================
-
-type KubernetesConfigMap struct {
-	ResourceID      string                                    `json:"resource_id"`
-	PlatformID      string                                    `json:"platform_id"`
-	Description     kubernetes.KubernetesConfigMapDescription `json:"Description"`
-	Metadata        kubernetes.Metadata                       `json:"metadata"`
-	DescribedBy     string                                    `json:"described_by"`
-	ResourceType    string                                    `json:"resource_type"`
-	IntegrationType string                                    `json:"integration_type"`
-	IntegrationID   string                                    `json:"integration_id"`
-}
-
-type KubernetesConfigMapHit struct {
-	ID      string              `json:"_id"`
-	Score   float64             `json:"_score"`
-	Index   string              `json:"_index"`
-	Type    string              `json:"_type"`
-	Version int64               `json:"_version,omitempty"`
-	Source  KubernetesConfigMap `json:"_source"`
-	Sort    []interface{}       `json:"sort"`
-}
-
-type KubernetesConfigMapHits struct {
-	Total essdk.SearchTotal        `json:"total"`
-	Hits  []KubernetesConfigMapHit `json:"hits"`
-}
-
-type KubernetesConfigMapSearchResponse struct {
-	PitID string                  `json:"pit_id"`
-	Hits  KubernetesConfigMapHits `json:"hits"`
-}
-
-type KubernetesConfigMapPaginator struct {
-	paginator *essdk.BaseESPaginator
-}
-
-func (k Client) NewKubernetesConfigMapPaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesConfigMapPaginator, error) {
-	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_configmap", filters, limit)
-	if err != nil {
-		return KubernetesConfigMapPaginator{}, err
-	}
-
-	p := KubernetesConfigMapPaginator{
-		paginator: paginator,
-	}
-
-	return p, nil
-}
-
-func (p KubernetesConfigMapPaginator) HasNext() bool {
-	return !p.paginator.Done()
-}
-
-func (p KubernetesConfigMapPaginator) Close(ctx context.Context) error {
-	return p.paginator.Deallocate(ctx)
-}
-
-func (p KubernetesConfigMapPaginator) NextPage(ctx context.Context) ([]KubernetesConfigMap, error) {
-	var response KubernetesConfigMapSearchResponse
-	err := p.paginator.Search(ctx, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	var values []KubernetesConfigMap
-	for _, hit := range response.Hits.Hits {
-		values = append(values, hit.Source)
-	}
-
-	hits := int64(len(response.Hits.Hits))
-	if hits > 0 {
-		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
-	} else {
-		p.paginator.UpdateState(hits, nil, "")
-	}
-
-	return values, nil
-}
-
-var listKubernetesConfigMapFilters = map[string]string{
-	"immutable": "Description.ConfigMap.Immutable",
-	"title":     "Description.ConfigMap.Name",
-}
-
-func ListKubernetesConfigMap(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("ListKubernetesConfigMap")
-	runtime.GC()
-
-	// create service
-	cfg := essdk.GetConfig(d.Connection)
-	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
-	if err != nil {
-		plugin.Logger(ctx).Error("ListKubernetesConfigMap NewClientCached", "error", err)
-		return nil, err
-	}
-	k := Client{Client: ke}
-
-	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
-	if err != nil {
-		plugin.Logger(ctx).Error("ListKubernetesConfigMap NewSelfClientCached", "error", err)
-		return nil, err
-	}
-	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
-	if err != nil {
-		plugin.Logger(ctx).Error("ListKubernetesConfigMap GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
-		return nil, err
-	}
-	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
-	if err != nil {
-		plugin.Logger(ctx).Error("ListKubernetesConfigMap GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
-		return nil, err
-	}
-	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
-	if err != nil {
-		plugin.Logger(ctx).Error("ListKubernetesConfigMap GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
-		return nil, err
-	}
-
-	paginator, err := k.NewKubernetesConfigMapPaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesConfigMapFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
-	if err != nil {
-		plugin.Logger(ctx).Error("ListKubernetesConfigMap NewKubernetesConfigMapPaginator", "error", err)
-		return nil, err
-	}
-
-	for paginator.HasNext() {
-		page, err := paginator.NextPage(ctx)
-		if err != nil {
-			plugin.Logger(ctx).Error("ListKubernetesConfigMap paginator.NextPage", "error", err)
-			return nil, err
-		}
-
-		for _, v := range page {
-			d.StreamListItem(ctx, v)
-		}
-	}
-
-	err = paginator.Close(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return nil, nil
-}
-
-var getKubernetesConfigMapFilters = map[string]string{
-	"immutable": "Description.ConfigMap.Immutable",
-	"title":     "Description.ConfigMap.Name",
-}
-
-func GetKubernetesConfigMap(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("GetKubernetesConfigMap")
-	runtime.GC()
-	// create service
-	cfg := essdk.GetConfig(d.Connection)
-	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
-	if err != nil {
-		return nil, err
-	}
-	k := Client{Client: ke}
-
-	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
-	if err != nil {
-		return nil, err
-	}
-	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
-	if err != nil {
-		return nil, err
-	}
-	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
-	if err != nil {
-		return nil, err
-	}
-	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
-	if err != nil {
-		return nil, err
-	}
-
-	limit := int64(1)
-	paginator, err := k.NewKubernetesConfigMapPaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesConfigMapFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
-	if err != nil {
-		return nil, err
-	}
-
-	for paginator.HasNext() {
-		page, err := paginator.NextPage(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, v := range page {
-			return v, nil
-		}
-	}
-
-	err = paginator.Close(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return nil, nil
-}
-
-// ==========================  END: KubernetesConfigMap =============================
-
-// ==========================  START: KubernetesSecret =============================
-
-type KubernetesSecret struct {
-	ResourceID      string                                 `json:"resource_id"`
-	PlatformID      string                                 `json:"platform_id"`
-	Description     kubernetes.KubernetesSecretDescription `json:"Description"`
-	Metadata        kubernetes.Metadata                    `json:"metadata"`
-	DescribedBy     string                                 `json:"described_by"`
-	ResourceType    string                                 `json:"resource_type"`
-	IntegrationType string                                 `json:"integration_type"`
-	IntegrationID   string                                 `json:"integration_id"`
-}
-
-type KubernetesSecretHit struct {
-	ID      string           `json:"_id"`
-	Score   float64          `json:"_score"`
-	Index   string           `json:"_index"`
-	Type    string           `json:"_type"`
-	Version int64            `json:"_version,omitempty"`
-	Source  KubernetesSecret `json:"_source"`
-	Sort    []interface{}    `json:"sort"`
-}
-
-type KubernetesSecretHits struct {
-	Total essdk.SearchTotal     `json:"total"`
-	Hits  []KubernetesSecretHit `json:"hits"`
-}
-
-type KubernetesSecretSearchResponse struct {
-	PitID string               `json:"pit_id"`
-	Hits  KubernetesSecretHits `json:"hits"`
-}
-
-type KubernetesSecretPaginator struct {
-	paginator *essdk.BaseESPaginator
-}
-
-func (k Client) NewKubernetesSecretPaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesSecretPaginator, error) {
-	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_secret", filters, limit)
-	if err != nil {
-		return KubernetesSecretPaginator{}, err
-	}
-
-	p := KubernetesSecretPaginator{
-		paginator: paginator,
-	}
-
-	return p, nil
-}
-
-func (p KubernetesSecretPaginator) HasNext() bool {
-	return !p.paginator.Done()
-}
-
-func (p KubernetesSecretPaginator) Close(ctx context.Context) error {
-	return p.paginator.Deallocate(ctx)
-}
-
-func (p KubernetesSecretPaginator) NextPage(ctx context.Context) ([]KubernetesSecret, error) {
-	var response KubernetesSecretSearchResponse
-	err := p.paginator.Search(ctx, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	var values []KubernetesSecret
-	for _, hit := range response.Hits.Hits {
-		values = append(values, hit.Source)
-	}
-
-	hits := int64(len(response.Hits.Hits))
-	if hits > 0 {
-		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
-	} else {
-		p.paginator.UpdateState(hits, nil, "")
-	}
-
-	return values, nil
-}
-
-var listKubernetesSecretFilters = map[string]string{
-	"immutable": "Description.Secret.Immutable",
-	"title":     "Description.Secret.Name",
-	"type":      "Description.Secret.Type",
-}
-
-func ListKubernetesSecret(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("ListKubernetesSecret")
-	runtime.GC()
-
-	// create service
-	cfg := essdk.GetConfig(d.Connection)
-	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
-	if err != nil {
-		plugin.Logger(ctx).Error("ListKubernetesSecret NewClientCached", "error", err)
-		return nil, err
-	}
-	k := Client{Client: ke}
-
-	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
-	if err != nil {
-		plugin.Logger(ctx).Error("ListKubernetesSecret NewSelfClientCached", "error", err)
-		return nil, err
-	}
-	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
-	if err != nil {
-		plugin.Logger(ctx).Error("ListKubernetesSecret GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
-		return nil, err
-	}
-	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
-	if err != nil {
-		plugin.Logger(ctx).Error("ListKubernetesSecret GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
-		return nil, err
-	}
-	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
-	if err != nil {
-		plugin.Logger(ctx).Error("ListKubernetesSecret GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
-		return nil, err
-	}
-
-	paginator, err := k.NewKubernetesSecretPaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesSecretFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
-	if err != nil {
-		plugin.Logger(ctx).Error("ListKubernetesSecret NewKubernetesSecretPaginator", "error", err)
-		return nil, err
-	}
-
-	for paginator.HasNext() {
-		page, err := paginator.NextPage(ctx)
-		if err != nil {
-			plugin.Logger(ctx).Error("ListKubernetesSecret paginator.NextPage", "error", err)
-			return nil, err
-		}
-
-		for _, v := range page {
-			d.StreamListItem(ctx, v)
-		}
-	}
-
-	err = paginator.Close(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return nil, nil
-}
-
-var getKubernetesSecretFilters = map[string]string{
-	"immutable": "Description.Secret.Immutable",
-	"title":     "Description.Secret.Name",
-	"type":      "Description.Secret.Type",
-}
-
-func GetKubernetesSecret(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("GetKubernetesSecret")
-	runtime.GC()
-	// create service
-	cfg := essdk.GetConfig(d.Connection)
-	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
-	if err != nil {
-		return nil, err
-	}
-	k := Client{Client: ke}
-
-	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
-	if err != nil {
-		return nil, err
-	}
-	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
-	if err != nil {
-		return nil, err
-	}
-	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
-	if err != nil {
-		return nil, err
-	}
-	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
-	if err != nil {
-		return nil, err
-	}
-
-	limit := int64(1)
-	paginator, err := k.NewKubernetesSecretPaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesSecretFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
-	if err != nil {
-		return nil, err
-	}
-
-	for paginator.HasNext() {
-		page, err := paginator.NextPage(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, v := range page {
-			return v, nil
-		}
-	}
-
-	err = paginator.Close(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return nil, nil
-}
-
-// ==========================  END: KubernetesSecret =============================
-
 // ==========================  START: KubernetesServiceAccount =============================
 
 type KubernetesServiceAccount struct {
@@ -1851,241 +6734,6 @@ func GetKubernetesServiceAccount(ctx context.Context, d *plugin.QueryData, _ *pl
 }
 
 // ==========================  END: KubernetesServiceAccount =============================
-
-// ==========================  START: KubernetesDeployment =============================
-
-type KubernetesDeployment struct {
-	ResourceID      string                                     `json:"resource_id"`
-	PlatformID      string                                     `json:"platform_id"`
-	Description     kubernetes.KubernetesDeploymentDescription `json:"Description"`
-	Metadata        kubernetes.Metadata                        `json:"metadata"`
-	DescribedBy     string                                     `json:"described_by"`
-	ResourceType    string                                     `json:"resource_type"`
-	IntegrationType string                                     `json:"integration_type"`
-	IntegrationID   string                                     `json:"integration_id"`
-}
-
-type KubernetesDeploymentHit struct {
-	ID      string               `json:"_id"`
-	Score   float64              `json:"_score"`
-	Index   string               `json:"_index"`
-	Type    string               `json:"_type"`
-	Version int64                `json:"_version,omitempty"`
-	Source  KubernetesDeployment `json:"_source"`
-	Sort    []interface{}        `json:"sort"`
-}
-
-type KubernetesDeploymentHits struct {
-	Total essdk.SearchTotal         `json:"total"`
-	Hits  []KubernetesDeploymentHit `json:"hits"`
-}
-
-type KubernetesDeploymentSearchResponse struct {
-	PitID string                   `json:"pit_id"`
-	Hits  KubernetesDeploymentHits `json:"hits"`
-}
-
-type KubernetesDeploymentPaginator struct {
-	paginator *essdk.BaseESPaginator
-}
-
-func (k Client) NewKubernetesDeploymentPaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesDeploymentPaginator, error) {
-	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_deployment", filters, limit)
-	if err != nil {
-		return KubernetesDeploymentPaginator{}, err
-	}
-
-	p := KubernetesDeploymentPaginator{
-		paginator: paginator,
-	}
-
-	return p, nil
-}
-
-func (p KubernetesDeploymentPaginator) HasNext() bool {
-	return !p.paginator.Done()
-}
-
-func (p KubernetesDeploymentPaginator) Close(ctx context.Context) error {
-	return p.paginator.Deallocate(ctx)
-}
-
-func (p KubernetesDeploymentPaginator) NextPage(ctx context.Context) ([]KubernetesDeployment, error) {
-	var response KubernetesDeploymentSearchResponse
-	err := p.paginator.Search(ctx, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	var values []KubernetesDeployment
-	for _, hit := range response.Hits.Hits {
-		values = append(values, hit.Source)
-	}
-
-	hits := int64(len(response.Hits.Hits))
-	if hits > 0 {
-		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
-	} else {
-		p.paginator.UpdateState(hits, nil, "")
-	}
-
-	return values, nil
-}
-
-var listKubernetesDeploymentFilters = map[string]string{
-	"available_replicas":        "Description.Deployment.Status.AvailableReplicas",
-	"collision_count":           "Description.Deployment.Status.CollisionCount",
-	"conditions":                "Description.Deployment.Status.Conditions",
-	"min_ready_seconds":         "Description.Deployment.Spec.MinReadySeconds",
-	"observed_generation":       "Description.Deployment.Status.ObservedGeneration",
-	"paused":                    "Description.Deployment.Spec.Paused",
-	"progress_deadline_seconds": "Description.Deployment.Spec.ProgressDeadlineSeconds",
-	"ready_replicas":            "Description.Deployment.Status.ReadyReplicas",
-	"replicas":                  "Description.Deployment.Spec.Replicas",
-	"revision_history_limit":    "Description.Deployment.Spec.RevisionHistoryLimit",
-	"selector":                  "Description.Deployment.Spec.Selector",
-	"status_replicas":           "Description.Deployment.Status.Replicas",
-	"strategy":                  "Description.Deployment.Spec.Strategy",
-	"template":                  "Description.Deployment.Spec.Template",
-	"title":                     "Description.Deployment.Name",
-	"unavailable_replicas":      "Description.Deployment.Status.UnavailableReplicas",
-	"updated_replicas":          "Description.Deployment.Status.UpdatedReplicas",
-}
-
-func ListKubernetesDeployment(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("ListKubernetesDeployment")
-	runtime.GC()
-
-	// create service
-	cfg := essdk.GetConfig(d.Connection)
-	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
-	if err != nil {
-		plugin.Logger(ctx).Error("ListKubernetesDeployment NewClientCached", "error", err)
-		return nil, err
-	}
-	k := Client{Client: ke}
-
-	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
-	if err != nil {
-		plugin.Logger(ctx).Error("ListKubernetesDeployment NewSelfClientCached", "error", err)
-		return nil, err
-	}
-	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
-	if err != nil {
-		plugin.Logger(ctx).Error("ListKubernetesDeployment GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
-		return nil, err
-	}
-	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
-	if err != nil {
-		plugin.Logger(ctx).Error("ListKubernetesDeployment GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
-		return nil, err
-	}
-	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
-	if err != nil {
-		plugin.Logger(ctx).Error("ListKubernetesDeployment GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
-		return nil, err
-	}
-
-	paginator, err := k.NewKubernetesDeploymentPaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesDeploymentFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
-	if err != nil {
-		plugin.Logger(ctx).Error("ListKubernetesDeployment NewKubernetesDeploymentPaginator", "error", err)
-		return nil, err
-	}
-
-	for paginator.HasNext() {
-		page, err := paginator.NextPage(ctx)
-		if err != nil {
-			plugin.Logger(ctx).Error("ListKubernetesDeployment paginator.NextPage", "error", err)
-			return nil, err
-		}
-
-		for _, v := range page {
-			d.StreamListItem(ctx, v)
-		}
-	}
-
-	err = paginator.Close(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return nil, nil
-}
-
-var getKubernetesDeploymentFilters = map[string]string{
-	"available_replicas":        "Description.Deployment.Status.AvailableReplicas",
-	"collision_count":           "Description.Deployment.Status.CollisionCount",
-	"conditions":                "Description.Deployment.Status.Conditions",
-	"min_ready_seconds":         "Description.Deployment.Spec.MinReadySeconds",
-	"observed_generation":       "Description.Deployment.Status.ObservedGeneration",
-	"paused":                    "Description.Deployment.Spec.Paused",
-	"progress_deadline_seconds": "Description.Deployment.Spec.ProgressDeadlineSeconds",
-	"ready_replicas":            "Description.Deployment.Status.ReadyReplicas",
-	"replicas":                  "Description.Deployment.Spec.Replicas",
-	"revision_history_limit":    "Description.Deployment.Spec.RevisionHistoryLimit",
-	"selector":                  "Description.Deployment.Spec.Selector",
-	"status_replicas":           "Description.Deployment.Status.Replicas",
-	"strategy":                  "Description.Deployment.Spec.Strategy",
-	"template":                  "Description.Deployment.Spec.Template",
-	"title":                     "Description.Deployment.Name",
-	"unavailable_replicas":      "Description.Deployment.Status.UnavailableReplicas",
-	"updated_replicas":          "Description.Deployment.Status.UpdatedReplicas",
-}
-
-func GetKubernetesDeployment(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	plugin.Logger(ctx).Trace("GetKubernetesDeployment")
-	runtime.GC()
-	// create service
-	cfg := essdk.GetConfig(d.Connection)
-	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
-	if err != nil {
-		return nil, err
-	}
-	k := Client{Client: ke}
-
-	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
-	if err != nil {
-		return nil, err
-	}
-	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
-	if err != nil {
-		return nil, err
-	}
-	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
-	if err != nil {
-		return nil, err
-	}
-	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
-	if err != nil {
-		return nil, err
-	}
-
-	limit := int64(1)
-	paginator, err := k.NewKubernetesDeploymentPaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesDeploymentFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
-	if err != nil {
-		return nil, err
-	}
-
-	for paginator.HasNext() {
-		page, err := paginator.NextPage(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, v := range page {
-			return v, nil
-		}
-	}
-
-	err = paginator.Close(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return nil, nil
-}
-
-// ==========================  END: KubernetesDeployment =============================
 
 // ==========================  START: KubernetesStatefulSet =============================
 
@@ -2317,3 +6965,208 @@ func GetKubernetesStatefulSet(ctx context.Context, d *plugin.QueryData, _ *plugi
 }
 
 // ==========================  END: KubernetesStatefulSet =============================
+
+// ==========================  START: KubernetesStorageClass =============================
+
+type KubernetesStorageClass struct {
+	ResourceID      string                                       `json:"resource_id"`
+	PlatformID      string                                       `json:"platform_id"`
+	Description     kubernetes.KubernetesStorageClassDescription `json:"Description"`
+	Metadata        kubernetes.Metadata                          `json:"metadata"`
+	DescribedBy     string                                       `json:"described_by"`
+	ResourceType    string                                       `json:"resource_type"`
+	IntegrationType string                                       `json:"integration_type"`
+	IntegrationID   string                                       `json:"integration_id"`
+}
+
+type KubernetesStorageClassHit struct {
+	ID      string                 `json:"_id"`
+	Score   float64                `json:"_score"`
+	Index   string                 `json:"_index"`
+	Type    string                 `json:"_type"`
+	Version int64                  `json:"_version,omitempty"`
+	Source  KubernetesStorageClass `json:"_source"`
+	Sort    []interface{}          `json:"sort"`
+}
+
+type KubernetesStorageClassHits struct {
+	Total essdk.SearchTotal           `json:"total"`
+	Hits  []KubernetesStorageClassHit `json:"hits"`
+}
+
+type KubernetesStorageClassSearchResponse struct {
+	PitID string                     `json:"pit_id"`
+	Hits  KubernetesStorageClassHits `json:"hits"`
+}
+
+type KubernetesStorageClassPaginator struct {
+	paginator *essdk.BaseESPaginator
+}
+
+func (k Client) NewKubernetesStorageClassPaginator(filters []essdk.BoolFilter, limit *int64) (KubernetesStorageClassPaginator, error) {
+	paginator, err := essdk.NewPaginator(k.ES(), "kubernetes_storageclass", filters, limit)
+	if err != nil {
+		return KubernetesStorageClassPaginator{}, err
+	}
+
+	p := KubernetesStorageClassPaginator{
+		paginator: paginator,
+	}
+
+	return p, nil
+}
+
+func (p KubernetesStorageClassPaginator) HasNext() bool {
+	return !p.paginator.Done()
+}
+
+func (p KubernetesStorageClassPaginator) Close(ctx context.Context) error {
+	return p.paginator.Deallocate(ctx)
+}
+
+func (p KubernetesStorageClassPaginator) NextPage(ctx context.Context) ([]KubernetesStorageClass, error) {
+	var response KubernetesStorageClassSearchResponse
+	err := p.paginator.Search(ctx, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var values []KubernetesStorageClass
+	for _, hit := range response.Hits.Hits {
+		values = append(values, hit.Source)
+	}
+
+	hits := int64(len(response.Hits.Hits))
+	if hits > 0 {
+		p.paginator.UpdateState(hits, response.Hits.Hits[hits-1].Sort, response.PitID)
+	} else {
+		p.paginator.UpdateState(hits, nil, "")
+	}
+
+	return values, nil
+}
+
+var listKubernetesStorageClassFilters = map[string]string{
+	"allow_volume_expansion": "AllowVolumeExpansion",
+	"title":                  "Name",
+}
+
+func ListKubernetesStorageClass(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("ListKubernetesStorageClass")
+	runtime.GC()
+
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesStorageClass NewClientCached", "error", err)
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesStorageClass NewSelfClientCached", "error", err)
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesStorageClass GetConfigTableValueOrNil for OpenGovernanceConfigKeyIntegrationID", "error", err)
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesStorageClass GetConfigTableValueOrNil for OpenGovernanceConfigKeyResourceCollectionFilters", "error", err)
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesStorageClass GetConfigTableValueOrNil for OpenGovernanceConfigKeyClientType", "error", err)
+		return nil, err
+	}
+
+	paginator, err := k.NewKubernetesStorageClassPaginator(essdk.BuildFilter(ctx, d.QueryContext, listKubernetesStorageClassFilters, integrationId, encodedResourceCollectionFilters, clientType), d.QueryContext.Limit)
+	if err != nil {
+		plugin.Logger(ctx).Error("ListKubernetesStorageClass NewKubernetesStorageClassPaginator", "error", err)
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			plugin.Logger(ctx).Error("ListKubernetesStorageClass paginator.NextPage", "error", err)
+			return nil, err
+		}
+
+		for _, v := range page {
+			d.StreamListItem(ctx, v)
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+var getKubernetesStorageClassFilters = map[string]string{
+	"allow_volume_expansion": "AllowVolumeExpansion",
+	"title":                  "Name",
+}
+
+func GetKubernetesStorageClass(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	plugin.Logger(ctx).Trace("GetKubernetesStorageClass")
+	runtime.GC()
+	// create service
+	cfg := essdk.GetConfig(d.Connection)
+	ke, err := essdk.NewClientCached(cfg, d.ConnectionCache, ctx)
+	if err != nil {
+		return nil, err
+	}
+	k := Client{Client: ke}
+
+	sc, err := steampipesdk.NewSelfClientCached(ctx, d.ConnectionCache)
+	if err != nil {
+		return nil, err
+	}
+	integrationId, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyIntegrationID)
+	if err != nil {
+		return nil, err
+	}
+	encodedResourceCollectionFilters, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyResourceCollectionFilters)
+	if err != nil {
+		return nil, err
+	}
+	clientType, err := sc.GetConfigTableValueOrNil(ctx, steampipesdk.OpenGovernanceConfigKeyClientType)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := int64(1)
+	paginator, err := k.NewKubernetesStorageClassPaginator(essdk.BuildFilter(ctx, d.QueryContext, getKubernetesStorageClassFilters, integrationId, encodedResourceCollectionFilters, clientType), &limit)
+	if err != nil {
+		return nil, err
+	}
+
+	for paginator.HasNext() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range page {
+			return v, nil
+		}
+	}
+
+	err = paginator.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// ==========================  END: KubernetesStorageClass =============================

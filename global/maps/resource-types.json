@@ -79,5 +79,189 @@
    "SteampipeTable": "kubernetes_deployment",
    "Model": "KubernetesDeployment",
    "Params": []
+ },{
+  "ResourceName": "Kubernetes/ReplicaSet",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesReplicaSet)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_replicaset",
+  "Model": "KubernetesReplicaSet",
+  "Params": []
+ },{
+  "ResourceName": "Kubernetes/DaemonSet",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesDaemonSet)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_daemonset",
+  "Model": "KubernetesDaemonSet",
+  "Params": []
+ },{
+  "ResourceName": "Kubernetes/Endpoint",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesEndpoint)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_endpoints",
+  "Model": "KubernetesEndpoint",
+  "Params": []
+ },{
+  "ResourceName": "Kubernetes/EndpointSlice",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesEndpointSlice)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_endpoint_slice",
+  "Model": "KubernetesEndpointSlice",
+  "Params": []
+ },{
+  "ResourceName": "Kubernetes/Event",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesEvent)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_event",
+  "Model": "KubernetesEvent",
+  "Params": []
+ },{
+  "ResourceName": "Kubernetes/Job",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesJob)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_job",
+  "Model": "KubernetesJob",
+  "Params": []
+ },{
+  "ResourceName": "Kubernetes/CronJob",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesCronJob)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_cronjob",
+  "Model": "KubernetesCronJob",
+  "Params": []
+ },{
+  "ResourceName": "Kubernetes/Ingress",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesIngress)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_ingress",
+  "Model": "KubernetesIngress",
+  "Params": []
+ },{
+  "ResourceName": "Kubernetes/NetworkPolicy",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesNetworkPolicy)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_network_policy",
+  "Model": "KubernetesNetworkPolicy",
+  "Params": []
+ },{
+  "ResourceName": "Kubernetes/Role",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesRole)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_role",
+  "Model": "KubernetesRole",
+  "Params": []
+ },{
+  "ResourceName": "Kubernetes/RoleBinding",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesRoleBinding)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_role_binding",
+  "Model": "KubernetesRoleBinding",
+  "Params": []
+ },{
+  "ResourceName": "Kubernetes/ClusterRole",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesClusterRole)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_cluster_role",
+  "Model": "KubernetesClusterRole",
+  "Params": []
+ },{
+  "ResourceName": "Kubernetes/ClusterRoleBinding",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesClusterRoleBinding)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_cluster_role_binding",
+  "Model": "KubernetesClusterRoleBinding",
+  "Params": []
+ },{
+  "ResourceName": "Kubernetes/PodDisruptionBudget",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesPodDisruptionBudget)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_pod_disruption_budget",
+  "Model": "KubernetesPodDisruptionBudget",
+  "Params": []
+ },{
+  "ResourceName": "Kubernetes/PodTemplate",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesPodTemplate)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_pod_template",
+  "Model": "KubernetesPodTemplate",
+  "Params": []
+ },{
+  "ResourceName": "Kubernetes/HorizontalPodAutoscaler",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesHorizontalPodAutoscaler)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_horizontal_pod_autoscaler",
+  "Model": "KubernetesHorizontalPodAutoscaler",
+  "Params": []
+ },{
+  "ResourceName": "Kubernetes/CustomResourceDefinition",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesCustomResourceDefinition)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_custom_resource_definition",
+  "Model": "KubernetesCustomResourceDefinition",
+  "Params": []
+ },{
+  "ResourceName": "Kubernetes/CustomResource",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesCustomResource)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_custom_resource",
+  "Model": "KubernetesCustomResource",
+  "Params": []
+ },{
+  "ResourceName": "Kubernetes/StorageClass",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesStorageClass)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_storage_class",
+  "Model": "KubernetesStorageClass",
+  "Params": []
+ },{
+  "ResourceName": "Kubernetes/LimitRange",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesLimitRange)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_limit_range",
+  "Model": "KubernetesLimitRange",
+  "Params": []
+ },{
+  "ResourceName": "Kubernetes/Namespace",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesNamespace)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_namespace",
+  "Model": "KubernetesNamespace",
+  "Params": []
+ },{
+  "ResourceName": "Kubernetes/ReplicationController",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesReplicationController)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_replication_controller",
+  "Model": "KubernetesReplicationController",
+  "Params": []
+ },{
+  "ResourceName": "Kubernetes/RessourceQuota",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesResourceQuota)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_resource_quota",
+  "Model": "KubernetesResourceQuota",
+  "Params": []
  }
 ]

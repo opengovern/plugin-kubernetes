@@ -32,7 +32,10 @@ func DescribeByIntegration(describe func(context.Context, Client, string, *model
 			return nil, err
 		}
 
-		helmClient, err := helmclient.NewClientFromRestConf(&helmclient.RestConfClientOptions{RestConfig: config})
+		helmClient, err := helmclient.NewClientFromRestConf(&helmclient.RestConfClientOptions{
+			Options:    &helmclient.Options{},
+			RestConfig: config,
+		})
 		if err != nil {
 			return nil, err
 		}

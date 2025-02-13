@@ -95,7 +95,9 @@ func (p KubernetesClusterRolePaginator) NextPage(ctx context.Context) ([]Kuberne
 }
 
 var listKubernetesClusterRoleFilters = map[string]string{
-	"title": "Name",
+	"aggregation_rule": "Description.ClusterRole.AggregationRule",
+	"rules":            "Description.ClusterRole.Rules",
+	"title":            "Description.ClusterRole.Name",
 }
 
 func ListKubernetesClusterRole(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -159,7 +161,9 @@ func ListKubernetesClusterRole(ctx context.Context, d *plugin.QueryData, _ *plug
 }
 
 var getKubernetesClusterRoleFilters = map[string]string{
-	"title": "Name",
+	"aggregation_rule": "Description.ClusterRole.AggregationRule",
+	"rules":            "Description.ClusterRole.Rules",
+	"title":            "Description.ClusterRole.Name",
 }
 
 func GetKubernetesClusterRole(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -298,10 +302,11 @@ func (p KubernetesClusterRoleBindingPaginator) NextPage(ctx context.Context) ([]
 }
 
 var listKubernetesClusterRoleBindingFilters = map[string]string{
-	"role_api_group": "RoleRef.APIGroup",
-	"role_kind":      "RoleRef.Kind",
-	"role_name":      "RoleRef.Name",
-	"title":          "Name",
+	"role_api_group": "Description.ClusterRoleBinding.RoleRef.APIGroup",
+	"role_kind":      "Description.ClusterRoleBinding.RoleRef.Kind",
+	"role_name":      "Description.ClusterRoleBinding.RoleRef.Name",
+	"subjects":       "Description.ClusterRoleBinding.Subjects",
+	"title":          "Description.ClusterRoleBinding.Name",
 }
 
 func ListKubernetesClusterRoleBinding(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -365,10 +370,11 @@ func ListKubernetesClusterRoleBinding(ctx context.Context, d *plugin.QueryData, 
 }
 
 var getKubernetesClusterRoleBindingFilters = map[string]string{
-	"role_api_group": "RoleRef.APIGroup",
-	"role_kind":      "RoleRef.Kind",
-	"role_name":      "RoleRef.Name",
-	"title":          "Name",
+	"role_api_group": "Description.ClusterRoleBinding.RoleRef.APIGroup",
+	"role_kind":      "Description.ClusterRoleBinding.RoleRef.Kind",
+	"role_name":      "Description.ClusterRoleBinding.RoleRef.Name",
+	"subjects":       "Description.ClusterRoleBinding.Subjects",
+	"title":          "Description.ClusterRoleBinding.Name",
 }
 
 func GetKubernetesClusterRoleBinding(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -712,15 +718,15 @@ func (p KubernetesCronJobPaginator) NextPage(ctx context.Context) ([]KubernetesC
 }
 
 var listKubernetesCronJobFilters = map[string]string{
-	"active":                        "Status.Active",
-	"concurrency_policy":            "Spec.ConcurrencyPolicy",
-	"failed_jobs_history_limit":     "Spec.FailedJobsHistoryLimit",
-	"job_template":                  "Spec.JobTemplate",
-	"schedule":                      "Spec.Schedule",
-	"starting_deadline_seconds":     "Spec.StartingDeadlineSeconds",
-	"successful_jobs_history_limit": "Spec.SuccessfulJobsHistoryLimit",
-	"suspend":                       "Spec.Suspend",
-	"title":                         "Name",
+	"active":                        "Description.CronJob.Status.Active",
+	"concurrency_policy":            "Description.CronJob.Spec.ConcurrencyPolicy",
+	"failed_jobs_history_limit":     "Description.CronJob.Spec.FailedJobsHistoryLimit",
+	"job_template":                  "Description.CronJob.Spec.JobTemplate",
+	"schedule":                      "Description.CronJob.Spec.Schedule",
+	"starting_deadline_seconds":     "Description.CronJob.Spec.StartingDeadlineSeconds",
+	"successful_jobs_history_limit": "Description.CronJob.Spec.SuccessfulJobsHistoryLimit",
+	"suspend":                       "Description.CronJob.Spec.Suspend",
+	"title":                         "Description.CronJob.Name",
 }
 
 func ListKubernetesCronJob(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -784,15 +790,15 @@ func ListKubernetesCronJob(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 }
 
 var getKubernetesCronJobFilters = map[string]string{
-	"active":                        "Status.Active",
-	"concurrency_policy":            "Spec.ConcurrencyPolicy",
-	"failed_jobs_history_limit":     "Spec.FailedJobsHistoryLimit",
-	"job_template":                  "Spec.JobTemplate",
-	"schedule":                      "Spec.Schedule",
-	"starting_deadline_seconds":     "Spec.StartingDeadlineSeconds",
-	"successful_jobs_history_limit": "Spec.SuccessfulJobsHistoryLimit",
-	"suspend":                       "Spec.Suspend",
-	"title":                         "Name",
+	"active":                        "Description.CronJob.Status.Active",
+	"concurrency_policy":            "Description.CronJob.Spec.ConcurrencyPolicy",
+	"failed_jobs_history_limit":     "Description.CronJob.Spec.FailedJobsHistoryLimit",
+	"job_template":                  "Description.CronJob.Spec.JobTemplate",
+	"schedule":                      "Description.CronJob.Spec.Schedule",
+	"starting_deadline_seconds":     "Description.CronJob.Spec.StartingDeadlineSeconds",
+	"successful_jobs_history_limit": "Description.CronJob.Spec.SuccessfulJobsHistoryLimit",
+	"suspend":                       "Description.CronJob.Spec.Suspend",
+	"title":                         "Description.CronJob.Name",
 }
 
 func GetKubernetesCronJob(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -930,7 +936,10 @@ func (p KubernetesCustomResourcePaginator) NextPage(ctx context.Context) ([]Kube
 	return values, nil
 }
 
-var listKubernetesCustomResourceFilters = map[string]string{}
+var listKubernetesCustomResourceFilters = map[string]string{
+	"fully_qualified_name": "Description.FullyQualifiedName",
+	"title":                "Description.MetaObject.Name",
+}
 
 func ListKubernetesCustomResource(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("ListKubernetesCustomResource")
@@ -992,7 +1001,10 @@ func ListKubernetesCustomResource(ctx context.Context, d *plugin.QueryData, _ *p
 	return nil, nil
 }
 
-var getKubernetesCustomResourceFilters = map[string]string{}
+var getKubernetesCustomResourceFilters = map[string]string{
+	"fully_qualified_name": "Description.FullyQualifiedName",
+	"title":                "Description.MetaObject.Name",
+}
 
 func GetKubernetesCustomResource(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("GetKubernetesCustomResource")
@@ -1129,7 +1141,10 @@ func (p KubernetesCustomResourceDefinitionPaginator) NextPage(ctx context.Contex
 	return values, nil
 }
 
-var listKubernetesCustomResourceDefinitionFilters = map[string]string{}
+var listKubernetesCustomResourceDefinitionFilters = map[string]string{
+	"spec":   "Description.CustomResourceDefinition.Spec",
+	"status": "Description.CustomResourceDefinition.Status",
+}
 
 func ListKubernetesCustomResourceDefinition(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("ListKubernetesCustomResourceDefinition")
@@ -1191,7 +1206,10 @@ func ListKubernetesCustomResourceDefinition(ctx context.Context, d *plugin.Query
 	return nil, nil
 }
 
-var getKubernetesCustomResourceDefinitionFilters = map[string]string{}
+var getKubernetesCustomResourceDefinitionFilters = map[string]string{
+	"spec":   "Description.CustomResourceDefinition.Spec",
+	"status": "Description.CustomResourceDefinition.Status",
+}
 
 func GetKubernetesCustomResourceDefinition(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	plugin.Logger(ctx).Trace("GetKubernetesCustomResourceDefinition")
@@ -1329,22 +1347,22 @@ func (p KubernetesDaemonSetPaginator) NextPage(ctx context.Context) ([]Kubernete
 }
 
 var listKubernetesDaemonSetFilters = map[string]string{
-	"collision_count":          "Status.CollisionCount",
-	"conditions":               "Status.Conditions",
-	"current_number_scheduled": "Status.CurrentNumberScheduled",
-	"desired_number_scheduled": "Status.DesiredNumberScheduled",
-	"min_ready_seconds":        "Spec.MinReadySeconds",
-	"number_available":         "Status.NumberAvailable",
-	"number_misscheduled":      "Status.NumberMisscheduled",
-	"number_ready":             "Status.NumberReady",
-	"number_unavailable":       "Status.NumberUnavailable",
-	"observed_generation":      "Status.ObservedGeneration",
-	"revision_history_limit":   "Spec.RevisionHistoryLimit",
-	"selector":                 "Spec.Volumes",
-	"template":                 "Spec.Template",
-	"title":                    "Name",
-	"update_strategy":          "Spec.UpdateStrategy",
-	"updated_number_scheduled": "Status.UpdatedNumberScheduled",
+	"collision_count":          "Description.DaemonSet.Status.CollisionCount",
+	"conditions":               "Description.DaemonSet.Status.Conditions",
+	"current_number_scheduled": "Description.DaemonSet.Status.CurrentNumberScheduled",
+	"desired_number_scheduled": "Description.DaemonSet.Status.DesiredNumberScheduled",
+	"min_ready_seconds":        "Description.DaemonSet.Spec.MinReadySeconds",
+	"number_available":         "Description.DaemonSet.Status.NumberAvailable",
+	"number_misscheduled":      "Description.DaemonSet.Status.NumberMisscheduled",
+	"number_ready":             "Description.DaemonSet.Status.NumberReady",
+	"number_unavailable":       "Description.DaemonSet.Status.NumberUnavailable",
+	"observed_generation":      "Description.DaemonSet.Status.ObservedGeneration",
+	"revision_history_limit":   "Description.DaemonSet.Spec.RevisionHistoryLimit",
+	"selector":                 "Description.DaemonSet.Spec.Volumes",
+	"template":                 "Description.DaemonSet.Spec.Template",
+	"title":                    "Description.DaemonSet.Name",
+	"update_strategy":          "Description.DaemonSet.Spec.UpdateStrategy",
+	"updated_number_scheduled": "Description.DaemonSet.Status.UpdatedNumberScheduled",
 }
 
 func ListKubernetesDaemonSet(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -1408,22 +1426,22 @@ func ListKubernetesDaemonSet(ctx context.Context, d *plugin.QueryData, _ *plugin
 }
 
 var getKubernetesDaemonSetFilters = map[string]string{
-	"collision_count":          "Status.CollisionCount",
-	"conditions":               "Status.Conditions",
-	"current_number_scheduled": "Status.CurrentNumberScheduled",
-	"desired_number_scheduled": "Status.DesiredNumberScheduled",
-	"min_ready_seconds":        "Spec.MinReadySeconds",
-	"number_available":         "Status.NumberAvailable",
-	"number_misscheduled":      "Status.NumberMisscheduled",
-	"number_ready":             "Status.NumberReady",
-	"number_unavailable":       "Status.NumberUnavailable",
-	"observed_generation":      "Status.ObservedGeneration",
-	"revision_history_limit":   "Spec.RevisionHistoryLimit",
-	"selector":                 "Spec.Volumes",
-	"template":                 "Spec.Template",
-	"title":                    "Name",
-	"update_strategy":          "Spec.UpdateStrategy",
-	"updated_number_scheduled": "Status.UpdatedNumberScheduled",
+	"collision_count":          "Description.DaemonSet.Status.CollisionCount",
+	"conditions":               "Description.DaemonSet.Status.Conditions",
+	"current_number_scheduled": "Description.DaemonSet.Status.CurrentNumberScheduled",
+	"desired_number_scheduled": "Description.DaemonSet.Status.DesiredNumberScheduled",
+	"min_ready_seconds":        "Description.DaemonSet.Spec.MinReadySeconds",
+	"number_available":         "Description.DaemonSet.Status.NumberAvailable",
+	"number_misscheduled":      "Description.DaemonSet.Status.NumberMisscheduled",
+	"number_ready":             "Description.DaemonSet.Status.NumberReady",
+	"number_unavailable":       "Description.DaemonSet.Status.NumberUnavailable",
+	"observed_generation":      "Description.DaemonSet.Status.ObservedGeneration",
+	"revision_history_limit":   "Description.DaemonSet.Spec.RevisionHistoryLimit",
+	"selector":                 "Description.DaemonSet.Spec.Volumes",
+	"template":                 "Description.DaemonSet.Spec.Template",
+	"title":                    "Description.DaemonSet.Name",
+	"update_strategy":          "Description.DaemonSet.Spec.UpdateStrategy",
+	"updated_number_scheduled": "Description.DaemonSet.Status.UpdatedNumberScheduled",
 }
 
 func GetKubernetesDaemonSet(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -1797,7 +1815,10 @@ func (p KubernetesEndpointSlicePaginator) NextPage(ctx context.Context) ([]Kuber
 }
 
 var listKubernetesEndpointSliceFilters = map[string]string{
-	"title": "Name",
+	"address_type": "Description.EndpointSlice.AddressType",
+	"endpoints":    "Description.EndpointSlice.Endpoints",
+	"ports":        "Description.EndpointSlice.Ports",
+	"title":        "Description.EndpointSlice.Name",
 }
 
 func ListKubernetesEndpointSlice(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -1861,7 +1882,10 @@ func ListKubernetesEndpointSlice(ctx context.Context, d *plugin.QueryData, _ *pl
 }
 
 var getKubernetesEndpointSliceFilters = map[string]string{
-	"title": "Name",
+	"address_type": "Description.EndpointSlice.AddressType",
+	"endpoints":    "Description.EndpointSlice.Endpoints",
+	"ports":        "Description.EndpointSlice.Ports",
+	"title":        "Description.EndpointSlice.Name",
 }
 
 func GetKubernetesEndpointSlice(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -2000,7 +2024,8 @@ func (p KubernetesEndpointPaginator) NextPage(ctx context.Context) ([]Kubernetes
 }
 
 var listKubernetesEndpointFilters = map[string]string{
-	"title": "Name",
+	"subsets": "Description.Endpoint.Subsets",
+	"title":   "Description.Endpoint.Name",
 }
 
 func ListKubernetesEndpoint(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -2064,7 +2089,8 @@ func ListKubernetesEndpoint(ctx context.Context, d *plugin.QueryData, _ *plugin.
 }
 
 var getKubernetesEndpointFilters = map[string]string{
-	"title": "Name",
+	"subsets": "Description.Endpoint.Subsets",
+	"title":   "Description.Endpoint.Name",
 }
 
 func GetKubernetesEndpoint(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -2203,9 +2229,17 @@ func (p KubernetesEventPaginator) NextPage(ctx context.Context) ([]KubernetesEve
 }
 
 var listKubernetesEventFilters = map[string]string{
-	"involved_object":     "InvolvedObject",
-	"reporting_component": "ReportingComponent",
-	"reporting_instance":  "ReportingInstance",
+	"action":              "Description.Event.Action",
+	"count":               "Description.Event.Count",
+	"involved_object":     "Description.Event.InvolvedObject",
+	"message":             "Description.Event.Message",
+	"reason":              "Description.Event.Reason",
+	"related":             "Description.Event.Related",
+	"reporting_component": "Description.Event.ReportingComponent",
+	"reporting_instance":  "Description.Event.ReportingInstance",
+	"series":              "Description.Event.Series",
+	"source":              "Description.Event.Source",
+	"type":                "Description.Event.Type",
 }
 
 func ListKubernetesEvent(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -2269,9 +2303,17 @@ func ListKubernetesEvent(ctx context.Context, d *plugin.QueryData, _ *plugin.Hyd
 }
 
 var getKubernetesEventFilters = map[string]string{
-	"involved_object":     "InvolvedObject",
-	"reporting_component": "ReportingComponent",
-	"reporting_instance":  "ReportingInstance",
+	"action":              "Description.Event.Action",
+	"count":               "Description.Event.Count",
+	"involved_object":     "Description.Event.InvolvedObject",
+	"message":             "Description.Event.Message",
+	"reason":              "Description.Event.Reason",
+	"related":             "Description.Event.Related",
+	"reporting_component": "Description.Event.ReportingComponent",
+	"reporting_instance":  "Description.Event.ReportingInstance",
+	"series":              "Description.Event.Series",
+	"source":              "Description.Event.Source",
+	"type":                "Description.Event.Type",
 }
 
 func GetKubernetesEvent(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -2410,18 +2452,18 @@ func (p KubernetesHorizontalPodAutoscalerPaginator) NextPage(ctx context.Context
 }
 
 var listKubernetesHorizontalPodAutoscalerFilters = map[string]string{
-	"conditions":          "Status.Conditions",
-	"current_metrics":     "Status.CurrentMetrics",
-	"current_replicas":    "Status.CurrentReplicas",
-	"desired_replicas":    "Status.DesiredReplicas",
-	"max_replicas":        "Spec.MaxReplicas",
-	"metrics":             "Spec.Metrics",
-	"min_replicas":        "Spec.MinReplicas",
-	"observed_generation": "Status.ObservedGeneration",
-	"scale_down_behavior": "Spec.Behavior.ScaleDown",
-	"scale_target_ref":    "Spec.ScaleTargetRef",
-	"scale_up_behavior":   "Spec.Behavior.ScaleUp",
-	"title":               "Name",
+	"conditions":          "Description.HorizontalPodAutoscaler.Status.Conditions",
+	"current_metrics":     "Description.HorizontalPodAutoscaler.Status.CurrentMetrics",
+	"current_replicas":    "Description.HorizontalPodAutoscaler.Status.CurrentReplicas",
+	"desired_replicas":    "Description.HorizontalPodAutoscaler.Status.DesiredReplicas",
+	"max_replicas":        "Description.HorizontalPodAutoscaler.Spec.MaxReplicas",
+	"metrics":             "Description.HorizontalPodAutoscaler.Spec.Metrics",
+	"min_replicas":        "Description.HorizontalPodAutoscaler.Spec.MinReplicas",
+	"observed_generation": "Description.HorizontalPodAutoscaler.Status.ObservedGeneration",
+	"scale_down_behavior": "Description.HorizontalPodAutoscaler.Spec.Behavior.ScaleDown",
+	"scale_target_ref":    "Description.HorizontalPodAutoscaler.Spec.ScaleTargetRef",
+	"scale_up_behavior":   "Description.HorizontalPodAutoscaler.Spec.Behavior.ScaleUp",
+	"title":               "Description.HorizontalPodAutoscaler.Name",
 }
 
 func ListKubernetesHorizontalPodAutoscaler(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -2485,18 +2527,18 @@ func ListKubernetesHorizontalPodAutoscaler(ctx context.Context, d *plugin.QueryD
 }
 
 var getKubernetesHorizontalPodAutoscalerFilters = map[string]string{
-	"conditions":          "Status.Conditions",
-	"current_metrics":     "Status.CurrentMetrics",
-	"current_replicas":    "Status.CurrentReplicas",
-	"desired_replicas":    "Status.DesiredReplicas",
-	"max_replicas":        "Spec.MaxReplicas",
-	"metrics":             "Spec.Metrics",
-	"min_replicas":        "Spec.MinReplicas",
-	"observed_generation": "Status.ObservedGeneration",
-	"scale_down_behavior": "Spec.Behavior.ScaleDown",
-	"scale_target_ref":    "Spec.ScaleTargetRef",
-	"scale_up_behavior":   "Spec.Behavior.ScaleUp",
-	"title":               "Name",
+	"conditions":          "Description.HorizontalPodAutoscaler.Status.Conditions",
+	"current_metrics":     "Description.HorizontalPodAutoscaler.Status.CurrentMetrics",
+	"current_replicas":    "Description.HorizontalPodAutoscaler.Status.CurrentReplicas",
+	"desired_replicas":    "Description.HorizontalPodAutoscaler.Status.DesiredReplicas",
+	"max_replicas":        "Description.HorizontalPodAutoscaler.Spec.MaxReplicas",
+	"metrics":             "Description.HorizontalPodAutoscaler.Spec.Metrics",
+	"min_replicas":        "Description.HorizontalPodAutoscaler.Spec.MinReplicas",
+	"observed_generation": "Description.HorizontalPodAutoscaler.Status.ObservedGeneration",
+	"scale_down_behavior": "Description.HorizontalPodAutoscaler.Spec.Behavior.ScaleDown",
+	"scale_target_ref":    "Description.HorizontalPodAutoscaler.Spec.ScaleTargetRef",
+	"scale_up_behavior":   "Description.HorizontalPodAutoscaler.Spec.Behavior.ScaleUp",
+	"title":               "Description.HorizontalPodAutoscaler.Name",
 }
 
 func GetKubernetesHorizontalPodAutoscaler(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -2635,12 +2677,12 @@ func (p KubernetesIngressPaginator) NextPage(ctx context.Context) ([]KubernetesI
 }
 
 var listKubernetesIngressFilters = map[string]string{
-	"default_backend":    "Spec.DefaultBackend",
-	"ingress_class_name": "Spec.IngressClassName",
-	"load_balancer":      "Status.LoadBalancer.Ingress",
-	"rules":              "Spec.Rules",
-	"title":              "Name",
-	"tls":                "Spec.TLS",
+	"default_backend":    "Description.Ingress.Spec.DefaultBackend",
+	"ingress_class_name": "Description.Ingress.Spec.IngressClassName",
+	"load_balancer":      "Description.Ingress.Status.LoadBalancer.Ingress",
+	"rules":              "Description.Ingress.Spec.Rules",
+	"title":              "Description.Ingress.Name",
+	"tls":                "Description.Ingress.Spec.TLS",
 }
 
 func ListKubernetesIngress(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -2704,12 +2746,12 @@ func ListKubernetesIngress(ctx context.Context, d *plugin.QueryData, _ *plugin.H
 }
 
 var getKubernetesIngressFilters = map[string]string{
-	"default_backend":    "Spec.DefaultBackend",
-	"ingress_class_name": "Spec.IngressClassName",
-	"load_balancer":      "Status.LoadBalancer.Ingress",
-	"rules":              "Spec.Rules",
-	"title":              "Name",
-	"tls":                "Spec.TLS",
+	"default_backend":    "Description.Ingress.Spec.DefaultBackend",
+	"ingress_class_name": "Description.Ingress.Spec.IngressClassName",
+	"load_balancer":      "Description.Ingress.Status.LoadBalancer.Ingress",
+	"rules":              "Description.Ingress.Spec.Rules",
+	"title":              "Description.Ingress.Name",
+	"tls":                "Description.Ingress.Spec.TLS",
 }
 
 func GetKubernetesIngress(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -2848,19 +2890,19 @@ func (p KubernetesJobPaginator) NextPage(ctx context.Context) ([]KubernetesJob, 
 }
 
 var listKubernetesJobFilters = map[string]string{
-	"active":                     "Status.Active",
-	"active_deadline_seconds":    "Spec.ActiveDeadlineSeconds",
-	"backoff_limit":              "Spec.BackoffLimit",
-	"completions":                "Spec.Completions",
-	"conditions":                 "Status.Conditions",
-	"failed":                     "Status.Failed",
-	"manual_selector":            "Spec.ManualSelector",
-	"parallelism":                "Spec.Parallelism",
-	"selector":                   "Spec.Selector",
-	"succeeded":                  "Status.Succeeded",
-	"template":                   "Spec.Template",
-	"title":                      "Name",
-	"ttl_seconds_after_finished": "Spec.TTLSecondsAfterFinished",
+	"active":                     "Description.Job.Status.Active",
+	"active_deadline_seconds":    "Description.Job.Spec.ActiveDeadlineSeconds",
+	"backoff_limit":              "Description.Job.Spec.BackoffLimit",
+	"completions":                "Description.Job.Spec.Completions",
+	"conditions":                 "Description.Job.Status.Conditions",
+	"failed":                     "Description.Job.Status.Failed",
+	"manual_selector":            "Description.Job.Spec.ManualSelector",
+	"parallelism":                "Description.Job.Spec.Parallelism",
+	"selector":                   "Description.Job.Spec.Selector",
+	"succeeded":                  "Description.Job.Status.Succeeded",
+	"template":                   "Description.Job.Spec.Template",
+	"title":                      "Description.Job.Name",
+	"ttl_seconds_after_finished": "Description.Job.Spec.TTLSecondsAfterFinished",
 }
 
 func ListKubernetesJob(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -2924,19 +2966,19 @@ func ListKubernetesJob(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 }
 
 var getKubernetesJobFilters = map[string]string{
-	"active":                     "Status.Active",
-	"active_deadline_seconds":    "Spec.ActiveDeadlineSeconds",
-	"backoff_limit":              "Spec.BackoffLimit",
-	"completions":                "Spec.Completions",
-	"conditions":                 "Status.Conditions",
-	"failed":                     "Status.Failed",
-	"manual_selector":            "Spec.ManualSelector",
-	"parallelism":                "Spec.Parallelism",
-	"selector":                   "Spec.Selector",
-	"succeeded":                  "Status.Succeeded",
-	"template":                   "Spec.Template",
-	"title":                      "Name",
-	"ttl_seconds_after_finished": "Spec.TTLSecondsAfterFinished",
+	"active":                     "Description.Job.Status.Active",
+	"active_deadline_seconds":    "Description.Job.Spec.ActiveDeadlineSeconds",
+	"backoff_limit":              "Description.Job.Spec.BackoffLimit",
+	"completions":                "Description.Job.Spec.Completions",
+	"conditions":                 "Description.Job.Status.Conditions",
+	"failed":                     "Description.Job.Status.Failed",
+	"manual_selector":            "Description.Job.Spec.ManualSelector",
+	"parallelism":                "Description.Job.Spec.Parallelism",
+	"selector":                   "Description.Job.Spec.Selector",
+	"succeeded":                  "Description.Job.Status.Succeeded",
+	"template":                   "Description.Job.Spec.Template",
+	"title":                      "Description.Job.Name",
+	"ttl_seconds_after_finished": "Description.Job.Spec.TTLSecondsAfterFinished",
 }
 
 func GetKubernetesJob(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -3075,8 +3117,8 @@ func (p KubernetesLimitRangePaginator) NextPage(ctx context.Context) ([]Kubernet
 }
 
 var listKubernetesLimitRangeFilters = map[string]string{
-	"spec_limits": "Spec.Limits",
-	"title":       "Name",
+	"spec_limits": "Description.LimitRange.Spec.Limits",
+	"title":       "Description.LimitRange.Name",
 }
 
 func ListKubernetesLimitRange(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -3140,8 +3182,8 @@ func ListKubernetesLimitRange(ctx context.Context, d *plugin.QueryData, _ *plugi
 }
 
 var getKubernetesLimitRangeFilters = map[string]string{
-	"spec_limits": "Spec.Limits",
-	"title":       "Name",
+	"spec_limits": "Description.LimitRange.Spec.Limits",
+	"title":       "Description.LimitRange.Name",
 }
 
 func GetKubernetesLimitRange(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -3280,10 +3322,10 @@ func (p KubernetesNamespacePaginator) NextPage(ctx context.Context) ([]Kubernete
 }
 
 var listKubernetesNamespaceFilters = map[string]string{
-	"conditions":      "Status.NamespaceCondition",
-	"phase":           "Status.Phase",
-	"spec_finalizers": "Spec.Finalizers",
-	"title":           "Name",
+	"conditions":      "Description.Namespace.Status.NamespaceCondition",
+	"phase":           "Description.Namespace.Status.Phase",
+	"spec_finalizers": "Description.Namespace.Spec.Finalizers",
+	"title":           "Description.Namespace.Name",
 }
 
 func ListKubernetesNamespace(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -3347,10 +3389,10 @@ func ListKubernetesNamespace(ctx context.Context, d *plugin.QueryData, _ *plugin
 }
 
 var getKubernetesNamespaceFilters = map[string]string{
-	"conditions":      "Status.NamespaceCondition",
-	"phase":           "Status.Phase",
-	"spec_finalizers": "Spec.Finalizers",
-	"title":           "Name",
+	"conditions":      "Description.Namespace.Status.NamespaceCondition",
+	"phase":           "Description.Namespace.Status.Phase",
+	"spec_finalizers": "Description.Namespace.Spec.Finalizers",
+	"title":           "Description.Namespace.Name",
 }
 
 func GetKubernetesNamespace(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -3489,11 +3531,11 @@ func (p KubernetesNetworkPolicyPaginator) NextPage(ctx context.Context) ([]Kuber
 }
 
 var listKubernetesNetworkPolicyFilters = map[string]string{
-	"egress":       "Spec.Egress",
-	"ingress":      "Spec.Ingress",
-	"pod_selector": "Spec.PodSelector",
-	"policy_types": "Spec.PolicyTypes",
-	"title":        "Name",
+	"egress":       "Description.NetworkPolicy.Spec.Egress",
+	"ingress":      "Description.NetworkPolicy.Spec.Ingress",
+	"pod_selector": "Description.NetworkPolicy.Spec.PodSelector",
+	"policy_types": "Description.NetworkPolicy.Spec.PolicyTypes",
+	"title":        "Description.NetworkPolicy.Name",
 }
 
 func ListKubernetesNetworkPolicy(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -3557,11 +3599,11 @@ func ListKubernetesNetworkPolicy(ctx context.Context, d *plugin.QueryData, _ *pl
 }
 
 var getKubernetesNetworkPolicyFilters = map[string]string{
-	"egress":       "Spec.Egress",
-	"ingress":      "Spec.Ingress",
-	"pod_selector": "Spec.PodSelector",
-	"policy_types": "Spec.PolicyTypes",
-	"title":        "Name",
+	"egress":       "Description.NetworkPolicy.Spec.Egress",
+	"ingress":      "Description.NetworkPolicy.Spec.Ingress",
+	"pod_selector": "Description.NetworkPolicy.Spec.PodSelector",
+	"policy_types": "Description.NetworkPolicy.Spec.PolicyTypes",
+	"title":        "Description.NetworkPolicy.Name",
 }
 
 func GetKubernetesNetworkPolicy(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -4684,10 +4726,10 @@ func (p KubernetesPodDisruptionBudgetPaginator) NextPage(ctx context.Context) ([
 }
 
 var listKubernetesPodDisruptionBudgetFilters = map[string]string{
-	"max_unavailable": "Spec.MaxUnavailable",
-	"min_available":   "Spec.MinAvailable",
-	"selector":        "Spec.Selector",
-	"title":           "Name",
+	"max_unavailable": "Description.PodDisruptionBudget.Spec.MaxUnavailable",
+	"min_available":   "Description.PodDisruptionBudget.Spec.MinAvailable",
+	"selector":        "Description.PodDisruptionBudget.Spec.Selector",
+	"title":           "Description.PodDisruptionBudget.Name",
 }
 
 func ListKubernetesPodDisruptionBudget(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -4751,10 +4793,10 @@ func ListKubernetesPodDisruptionBudget(ctx context.Context, d *plugin.QueryData,
 }
 
 var getKubernetesPodDisruptionBudgetFilters = map[string]string{
-	"max_unavailable": "Spec.MaxUnavailable",
-	"min_available":   "Spec.MinAvailable",
-	"selector":        "Spec.Selector",
-	"title":           "Name",
+	"max_unavailable": "Description.PodDisruptionBudget.Spec.MaxUnavailable",
+	"min_available":   "Description.PodDisruptionBudget.Spec.MinAvailable",
+	"selector":        "Description.PodDisruptionBudget.Spec.Selector",
+	"title":           "Description.PodDisruptionBudget.Name",
 }
 
 func GetKubernetesPodDisruptionBudget(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -4893,7 +4935,8 @@ func (p KubernetesPodTemplatePaginator) NextPage(ctx context.Context) ([]Kuberne
 }
 
 var listKubernetesPodTemplateFilters = map[string]string{
-	"title": "Name",
+	"template": "Description.PodTemplate.Template",
+	"title":    "Description.PodTemplate.Name",
 }
 
 func ListKubernetesPodTemplate(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -4957,7 +5000,8 @@ func ListKubernetesPodTemplate(ctx context.Context, d *plugin.QueryData, _ *plug
 }
 
 var getKubernetesPodTemplateFilters = map[string]string{
-	"title": "Name",
+	"template": "Description.PodTemplate.Template",
+	"title":    "Description.PodTemplate.Name",
 }
 
 func GetKubernetesPodTemplate(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -5096,17 +5140,17 @@ func (p KubernetesReplicaSetPaginator) NextPage(ctx context.Context) ([]Kubernet
 }
 
 var listKubernetesReplicaSetFilters = map[string]string{
-	"available_replicas":     "Status.AvailableReplicas",
-	"conditions":             "Status.Conditions",
-	"fully_labeled_replicas": "Status.FullyLabeledReplicas",
-	"min_ready_seconds":      "Spec.MinReadySeconds",
-	"observed_generation":    "Status.ObservedGeneration",
-	"ready_replicas":         "Status.ReadyReplicas",
-	"replicas":               "Spec.Replicas",
-	"selector":               "Spec.Selector",
-	"status_replicas":        "Status.Replicas",
-	"template":               "Spec.Template",
-	"title":                  "Name",
+	"available_replicas":     "Description.ReplicaSet.Status.AvailableReplicas",
+	"conditions":             "Description.ReplicaSet.Status.Conditions",
+	"fully_labeled_replicas": "Description.ReplicaSet.Status.FullyLabeledReplicas",
+	"min_ready_seconds":      "Description.ReplicaSet.Spec.MinReadySeconds",
+	"observed_generation":    "Description.ReplicaSet.Status.ObservedGeneration",
+	"ready_replicas":         "Description.ReplicaSet.Status.ReadyReplicas",
+	"replicas":               "Description.ReplicaSet.Spec.Replicas",
+	"selector":               "Description.ReplicaSet.Spec.Selector",
+	"status_replicas":        "Description.ReplicaSet.Status.Replicas",
+	"template":               "Description.ReplicaSet.Spec.Template",
+	"title":                  "Description.ReplicaSet.Name",
 }
 
 func ListKubernetesReplicaSet(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -5170,17 +5214,17 @@ func ListKubernetesReplicaSet(ctx context.Context, d *plugin.QueryData, _ *plugi
 }
 
 var getKubernetesReplicaSetFilters = map[string]string{
-	"available_replicas":     "Status.AvailableReplicas",
-	"conditions":             "Status.Conditions",
-	"fully_labeled_replicas": "Status.FullyLabeledReplicas",
-	"min_ready_seconds":      "Spec.MinReadySeconds",
-	"observed_generation":    "Status.ObservedGeneration",
-	"ready_replicas":         "Status.ReadyReplicas",
-	"replicas":               "Spec.Replicas",
-	"selector":               "Spec.Selector",
-	"status_replicas":        "Status.Replicas",
-	"template":               "Spec.Template",
-	"title":                  "Name",
+	"available_replicas":     "Description.ReplicaSet.Status.AvailableReplicas",
+	"conditions":             "Description.ReplicaSet.Status.Conditions",
+	"fully_labeled_replicas": "Description.ReplicaSet.Status.FullyLabeledReplicas",
+	"min_ready_seconds":      "Description.ReplicaSet.Spec.MinReadySeconds",
+	"observed_generation":    "Description.ReplicaSet.Status.ObservedGeneration",
+	"ready_replicas":         "Description.ReplicaSet.Status.ReadyReplicas",
+	"replicas":               "Description.ReplicaSet.Spec.Replicas",
+	"selector":               "Description.ReplicaSet.Spec.Selector",
+	"status_replicas":        "Description.ReplicaSet.Status.Replicas",
+	"template":               "Description.ReplicaSet.Spec.Template",
+	"title":                  "Description.ReplicaSet.Name",
 }
 
 func GetKubernetesReplicaSet(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -5319,17 +5363,17 @@ func (p KubernetesReplicationControllerPaginator) NextPage(ctx context.Context) 
 }
 
 var listKubernetesReplicationControllerFilters = map[string]string{
-	"available_replicas":     "Status.AvailableReplicas",
-	"conditions":             "Status.Conditions",
-	"fully_labeled_replicas": "Status.FullyLabeledReplicas",
-	"min_ready_seconds":      "Spec.MinReadySeconds",
-	"observed_generation":    "Status.ObservedGeneration",
-	"ready_replicas":         "Status.ReadyReplicas",
-	"replicas":               "Spec.Replicas",
-	"selector":               "Spec.Selector",
-	"status_replicas":        "Status.Replicas",
-	"template":               "Spec.Template",
-	"title":                  "Name",
+	"available_replicas":     "Description.ReplicationController.Status.AvailableReplicas",
+	"conditions":             "Description.ReplicationController.Status.Conditions",
+	"fully_labeled_replicas": "Description.ReplicationController.Status.FullyLabeledReplicas",
+	"min_ready_seconds":      "Description.ReplicationController.Spec.MinReadySeconds",
+	"observed_generation":    "Description.ReplicationController.Status.ObservedGeneration",
+	"ready_replicas":         "Description.ReplicationController.Status.ReadyReplicas",
+	"replicas":               "Description.ReplicationController.Spec.Replicas",
+	"selector":               "Description.ReplicationController.Spec.Selector",
+	"status_replicas":        "Description.ReplicationController.Status.Replicas",
+	"template":               "Description.ReplicationController.Spec.Template",
+	"title":                  "Description.ReplicationController.Name",
 }
 
 func ListKubernetesReplicationController(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -5393,17 +5437,17 @@ func ListKubernetesReplicationController(ctx context.Context, d *plugin.QueryDat
 }
 
 var getKubernetesReplicationControllerFilters = map[string]string{
-	"available_replicas":     "Status.AvailableReplicas",
-	"conditions":             "Status.Conditions",
-	"fully_labeled_replicas": "Status.FullyLabeledReplicas",
-	"min_ready_seconds":      "Spec.MinReadySeconds",
-	"observed_generation":    "Status.ObservedGeneration",
-	"ready_replicas":         "Status.ReadyReplicas",
-	"replicas":               "Spec.Replicas",
-	"selector":               "Spec.Selector",
-	"status_replicas":        "Status.Replicas",
-	"template":               "Spec.Template",
-	"title":                  "Name",
+	"available_replicas":     "Description.ReplicationController.Status.AvailableReplicas",
+	"conditions":             "Description.ReplicationController.Status.Conditions",
+	"fully_labeled_replicas": "Description.ReplicationController.Status.FullyLabeledReplicas",
+	"min_ready_seconds":      "Description.ReplicationController.Spec.MinReadySeconds",
+	"observed_generation":    "Description.ReplicationController.Status.ObservedGeneration",
+	"ready_replicas":         "Description.ReplicationController.Status.ReadyReplicas",
+	"replicas":               "Description.ReplicationController.Spec.Replicas",
+	"selector":               "Description.ReplicationController.Spec.Selector",
+	"status_replicas":        "Description.ReplicationController.Status.Replicas",
+	"template":               "Description.ReplicationController.Spec.Template",
+	"title":                  "Description.ReplicationController.Name",
 }
 
 func GetKubernetesReplicationController(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -5542,12 +5586,12 @@ func (p KubernetesResourceQuotaPaginator) NextPage(ctx context.Context) ([]Kuber
 }
 
 var listKubernetesResourceQuotaFilters = map[string]string{
-	"spec_hard":           "Spec.Hard",
-	"spec_scope_selector": "Spec.ScopeSelector",
-	"spec_scopes":         "Spec.Scopes",
-	"status_hard":         "Status.Hard",
-	"status_used":         "Status.Used",
-	"title":               "Name",
+	"spec_hard":           "Description.ResourceQuota.Spec.Hard",
+	"spec_scope_selector": "Description.ResourceQuota.Spec.ScopeSelector",
+	"spec_scopes":         "Description.ResourceQuota.Spec.Scopes",
+	"status_hard":         "Description.ResourceQuota.Status.Hard",
+	"status_used":         "Description.ResourceQuota.Status.Used",
+	"title":               "Description.ResourceQuota.Name",
 }
 
 func ListKubernetesResourceQuota(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -5611,12 +5655,12 @@ func ListKubernetesResourceQuota(ctx context.Context, d *plugin.QueryData, _ *pl
 }
 
 var getKubernetesResourceQuotaFilters = map[string]string{
-	"spec_hard":           "Spec.Hard",
-	"spec_scope_selector": "Spec.ScopeSelector",
-	"spec_scopes":         "Spec.Scopes",
-	"status_hard":         "Status.Hard",
-	"status_used":         "Status.Used",
-	"title":               "Name",
+	"spec_hard":           "Description.ResourceQuota.Spec.Hard",
+	"spec_scope_selector": "Description.ResourceQuota.Spec.ScopeSelector",
+	"spec_scopes":         "Description.ResourceQuota.Spec.Scopes",
+	"status_hard":         "Description.ResourceQuota.Status.Hard",
+	"status_used":         "Description.ResourceQuota.Status.Used",
+	"title":               "Description.ResourceQuota.Name",
 }
 
 func GetKubernetesResourceQuota(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -5755,7 +5799,8 @@ func (p KubernetesRolePaginator) NextPage(ctx context.Context) ([]KubernetesRole
 }
 
 var listKubernetesRoleFilters = map[string]string{
-	"title": "Name",
+	"rules": "Description.Role.Rules",
+	"title": "Description.Role.Name",
 }
 
 func ListKubernetesRole(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -5819,7 +5864,8 @@ func ListKubernetesRole(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 }
 
 var getKubernetesRoleFilters = map[string]string{
-	"title": "Name",
+	"rules": "Description.Role.Rules",
+	"title": "Description.Role.Name",
 }
 
 func GetKubernetesRole(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -5958,10 +6004,11 @@ func (p KubernetesRoleBindingPaginator) NextPage(ctx context.Context) ([]Kuberne
 }
 
 var listKubernetesRoleBindingFilters = map[string]string{
-	"role_api_group": "RoleRef.APIGroup",
-	"role_kind":      "RoleRef.Kind",
-	"role_name":      "RoleRef.Name",
-	"title":          "Name",
+	"role_api_group": "Description.RoleBinding.RoleRef.APIGroup",
+	"role_kind":      "Description.RoleBinding.RoleRef.Kind",
+	"role_name":      "Description.RoleBinding.RoleRef.Name",
+	"subjects":       "Description.RoleBinding.Subjects",
+	"title":          "Description.RoleBinding.Name",
 }
 
 func ListKubernetesRoleBinding(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -6025,10 +6072,11 @@ func ListKubernetesRoleBinding(ctx context.Context, d *plugin.QueryData, _ *plug
 }
 
 var getKubernetesRoleBindingFilters = map[string]string{
-	"role_api_group": "RoleRef.APIGroup",
-	"role_kind":      "RoleRef.Kind",
-	"role_name":      "RoleRef.Name",
-	"title":          "Name",
+	"role_api_group": "Description.RoleBinding.RoleRef.APIGroup",
+	"role_kind":      "Description.RoleBinding.RoleRef.Kind",
+	"role_name":      "Description.RoleBinding.RoleRef.Name",
+	"subjects":       "Description.RoleBinding.Subjects",
+	"title":          "Description.RoleBinding.Name",
 }
 
 func GetKubernetesRoleBinding(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -7047,8 +7095,14 @@ func (p KubernetesStorageClassPaginator) NextPage(ctx context.Context) ([]Kubern
 }
 
 var listKubernetesStorageClassFilters = map[string]string{
-	"allow_volume_expansion": "AllowVolumeExpansion",
-	"title":                  "Name",
+	"allow_volume_expansion": "Description.StorageClass.AllowVolumeExpansion",
+	"allowed_topologies":     "Description.StorageClass.AllowedTopologies",
+	"mount_options":          "Description.StorageClass.MountOptions",
+	"parameters":             "Description.StorageClass.Parameters",
+	"provisioner":            "Description.StorageClass.Provisioner",
+	"reclaim_policy":         "Description.StorageClass.ReclaimPolicy",
+	"title":                  "Description.StorageClass.Name",
+	"volume_binding_mode":    "Description.StorageClass.VolumeBindingMode",
 }
 
 func ListKubernetesStorageClass(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -7112,8 +7166,14 @@ func ListKubernetesStorageClass(ctx context.Context, d *plugin.QueryData, _ *plu
 }
 
 var getKubernetesStorageClassFilters = map[string]string{
-	"allow_volume_expansion": "AllowVolumeExpansion",
-	"title":                  "Name",
+	"allow_volume_expansion": "Description.StorageClass.AllowVolumeExpansion",
+	"allowed_topologies":     "Description.StorageClass.AllowedTopologies",
+	"mount_options":          "Description.StorageClass.MountOptions",
+	"parameters":             "Description.StorageClass.Parameters",
+	"provisioner":            "Description.StorageClass.Provisioner",
+	"reclaim_policy":         "Description.StorageClass.ReclaimPolicy",
+	"title":                  "Description.StorageClass.Name",
+	"volume_binding_mode":    "Description.StorageClass.VolumeBindingMode",
 }
 
 func GetKubernetesStorageClass(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {

@@ -92,6 +92,9 @@ jobs:
       - name: Copy manifest to output directory
         working-directory: .
         run: cp ./platform/constants/manifest.yaml ./kubernetes-plugin/
+      - name: Copy index templates folder to output directory
+        working-directory: .
+        run: cp -r ./platform/index-templates ./kubernetes-plugin/
       - name: Pack output
         working-directory: .
         run: |

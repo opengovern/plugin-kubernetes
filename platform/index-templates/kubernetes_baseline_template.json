@@ -16,7 +16,7 @@
 			"dynamic_templates": [
 				{
 					"labels": {
-						"path_match": "description.*.metadata.labels",
+						"path_match": "Description.*.metadata.labels",
 						"mapping": {
 							"enabled": false
 						}
@@ -24,7 +24,7 @@
 				},
 				{
 					"annotations": {
-						"path_match": "description.*.metadata.annotations",
+						"path_match": "Description.*.metadata.annotations",
 						"mapping": {
 							"enabled": false
 						}
@@ -32,7 +32,7 @@
 				},
 				{
 					"managed_fields": {
-						"path_match": "description.*.metadata.managedFields",
+						"path_match": "Description.*.metadata.managedFields",
 						"mapping": {
 							"enabled": false
 						}
@@ -40,13 +40,13 @@
 				}
 			],
 			"properties": {
-				"description.MetaObject.labels": {
+				"Description.MetaObject.labels": {
 					"enabled": false
 				},
-				"description.MetaObject.annotations": {
+				"Description.MetaObject.annotations": {
 					"enabled": false
 				},
-				"description.MetaObject.managedFields": {
+				"Description.MetaObject.managedFields": {
 					"enabled": false
 				}
 			}

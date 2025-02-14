@@ -14,16 +14,16 @@
     },
     "mappings": {
       "properties": {
-        "description.MetaObject.labels": {
+        "Description.MetaObject.labels": {
           "enabled": false
         },
-        "description.MetaObject.annotations": {
+        "Description.MetaObject.annotations": {
           "enabled": false
         },
-        "description.MetaObject.managedFields": {
+        "Description.MetaObject.managedFields": {
           "enabled": false
         },
-        "description.CustomResource": {
+        "Description.CustomResource": {
           "enabled": false
         }
       }

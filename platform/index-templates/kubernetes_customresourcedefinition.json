@@ -1,6 +1,6 @@
 {
 	"index_patterns": [
-		"kubernetes_*"
+		"kubernetes_customresourcedefinition"
 	],
 	"template": {
 		"settings": {
@@ -48,16 +48,19 @@
 				},
 				"description.MetaObject.managedFields": {
 					"enabled": false
+				},
+				"description.CustomResourceDefinition.spec": {
+					"enabled": false
 				}
 			}
 		}
 	},
-	"priority": 15,
+	"priority": 20,
 	"composed_of": [
 		"resource_component_template"
 	],
 	"version": 1,
 	"_meta": {
-		"description": "Index template for kubernetes_* indices"
+		"description": "Index template for kubernetes_customresourcedefinition"
 	}
 }

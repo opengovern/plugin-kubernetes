@@ -1,0 +1,40 @@
+{
+  "index_patterns": [
+    "kubernetes_customresource"
+  ],
+  "template": {
+    "settings": {
+      "index":{
+        "mapping":{
+          "total_fields": {
+            "limit": "10000"
+          }
+        }
+      }
+    },
+    "mappings": {
+      "properties": {
+        "description.MetaObject.labels": {
+          "enabled": false
+        },
+        "description.MetaObject.annotations": {
+          "enabled": false
+        },
+        "description.MetaObject.managedFields": {
+          "enabled": false
+        },
+        "description.CustomResource": {
+          "enabled": false
+        }
+      }
+    }
+  },
+  "priority": 20,
+  "composed_of": [
+    "resource_component_template"
+  ],
+  "version": 1,
+  "_meta": {
+    "description": "Index template for kubernetes_customresource"
+  }
+}

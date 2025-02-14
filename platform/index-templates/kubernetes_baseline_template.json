@@ -1,0 +1,63 @@
+{
+	"index_patterns": [
+		"kubernetes_*"
+	],
+	"template": {
+		"settings": {
+			"index":{
+				"mapping":{
+					"total_fields": {
+						"limit": "10000"
+					}
+				}
+			}
+		},
+		"mappings": {
+			"dynamic_templates": [
+				{
+					"labels": {
+						"path_match": "description.*.metadata.labels",
+						"mapping": {
+							"enabled": false
+						}
+					}
+				},
+				{
+					"annotations": {
+						"path_match": "description.*.metadata.annotations",
+						"mapping": {
+							"enabled": false
+						}
+					}
+				},
+				{
+					"managed_fields": {
+						"path_match": "description.*.metadata.managedFields",
+						"mapping": {
+							"enabled": false
+						}
+					}
+				}
+			],
+			"properties": {
+				"description.MetaObject.labels": {
+					"enabled": false
+				},
+				"description.MetaObject.annotations": {
+					"enabled": false
+				},
+				"description.MetaObject.managedFields": {
+					"enabled": false
+				}
+			}
+		}
+	},
+	"priority": 15,
+	"composed_of": [
+		"resource_component_template"
+	],
+	"version": 1,
+	"_meta": {
+		"description": "Index template for kubernetes_* indices",
+	}
+}

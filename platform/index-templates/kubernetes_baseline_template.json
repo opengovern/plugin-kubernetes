@@ -37,6 +37,22 @@
 							"enabled": false
 						}
 					}
+				},
+				{
+					"managed_fields": {
+						"path_match": "Description.*.matchLabels",
+						"mapping": {
+							"enabled": false
+						}
+					}
+				},
+				{
+					"managed_fields": {
+						"path_match": "Description.*.selector",
+						"mapping": {
+							"enabled": false
+						}
+					}
 				}
 			],
 			"properties": {

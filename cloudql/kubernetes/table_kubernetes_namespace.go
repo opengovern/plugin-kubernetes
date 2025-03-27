@@ -12,9 +12,6 @@ func tableKubernetesNamespace(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_namespace",
 		Description: "Kubernetes Namespace provides a scope for Names.",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesNamespace,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesNamespace,
 		},

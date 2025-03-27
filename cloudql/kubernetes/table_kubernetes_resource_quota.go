@@ -12,9 +12,6 @@ func tableKubernetesResourceQuota(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_resource_quota",
 		Description: "Kubernetes Resource Quota",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesResourceQuota,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesResourceQuota,
 		},

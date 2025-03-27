@@ -12,9 +12,6 @@ func tableKubernetesDeployment(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_deployment",
 		Description: "Kubernetes Deployment enables declarative updates for Pods and ReplicaSets.",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesDeployment,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesDeployment,
 		},

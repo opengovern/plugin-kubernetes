@@ -12,9 +12,6 @@ func tableKubernetesCronJob(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_cronjob",
 		Description: "Cron jobs are useful for creating periodic and recurring tasks, like running backups or sending emails.",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesCronJob,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesCronJob,
 		},

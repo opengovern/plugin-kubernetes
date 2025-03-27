@@ -3,7 +3,7 @@ package kubernetes
 import (
 	"context"
 	opengovernance "github.com/opengovern/og-describer-kubernetes/discovery/pkg/es"
-	
+
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
@@ -13,9 +13,6 @@ func tableKubernetesClusterRoleBinding(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_cluster_role_binding",
 		Description: "A ClusterRoleBinding grants the permissions defined in a cluster role to a user or set of users. Access granted by ClusterRoleBinding is cluster-wide.",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesClusterRoleBinding,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesClusterRoleBinding,
 		},

@@ -12,9 +12,6 @@ func tableKubernetesPodTemplate(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_pod_template",
 		Description: "Kubernetes Pod Template is a collection of templates for creating copies of a predefined pod.",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesPodTemplate,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesPodTemplate,
 		},

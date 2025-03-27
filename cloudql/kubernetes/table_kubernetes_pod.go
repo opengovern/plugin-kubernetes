@@ -12,9 +12,6 @@ func tableKubernetesPod(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_pod",
 		Description: "Kubernetes Pod is a collection of containers that can run on a host. This resource is created by clients and scheduled onto hosts.",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesPod,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesPod,
 		},

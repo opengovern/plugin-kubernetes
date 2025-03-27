@@ -12,9 +12,6 @@ func tableKubernetesDaemonset(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_daemonset",
 		Description: "A DaemonSet ensures that all (or some) Nodes run a copy of a Pod.",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesDaemonSet,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesDaemonSet,
 		},

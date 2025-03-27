@@ -12,9 +12,6 @@ func tableKubernetesPDB(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_pod_disruption_budget",
 		Description: "A Pod Disruption Budget limits the number of Pods of a replicated application that are down simultaneously from voluntary disruptions.",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesPodDisruptionBudget,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesPodDisruptionBudget,
 		},

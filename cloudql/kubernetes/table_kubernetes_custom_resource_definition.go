@@ -12,9 +12,6 @@ func tableKubernetesCustomResourceDefinition(ctx context.Context) *plugin.Table 
 	return &plugin.Table{
 		Name:        "kubernetes_custom_resource_definition",
 		Description: "Kubernetes Custom Resource Definition.",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesCustomResourceDefinition,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesCustomResourceDefinition,
 		},

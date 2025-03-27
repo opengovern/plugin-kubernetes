@@ -13,9 +13,6 @@ func tableKubernetesPersistentVolume(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_persistent_volume",
 		Description: "A PersistentVolume (PV) is a piece of storage in the cluster that has been provisioned by an administrator or dynamically provisioned using Storage Classes. PVs are volume plugins like Volumes, but have a lifecycle independent of any individual Pod that uses the PV.",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesPersistentVolume,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesPersistentVolume,
 		},

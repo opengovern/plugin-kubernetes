@@ -12,9 +12,6 @@ func tableKubernetesStorageClass(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_storage_class",
 		Description: "Storage class provides a way for administrators to describe the classes of storage they offer.",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesStorageClass,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesStorageClass,
 		},

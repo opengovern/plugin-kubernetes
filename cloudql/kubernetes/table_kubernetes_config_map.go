@@ -12,9 +12,6 @@ func tableKubernetesConfigMap(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_config_map",
 		Description: "Config Map can be used to store fine-grained information like individual properties or coarse-grained information like entire config files or JSON blobs.",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesConfigMap,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesConfigMap,
 		},

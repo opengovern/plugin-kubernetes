@@ -12,9 +12,6 @@ func tableKubernetesCustomResource(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_custom_resource",
 		Description: "Custom resources are extensions of the Kubernetes API.",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesCustomResource,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesCustomResource,
 		},

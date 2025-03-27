@@ -12,9 +12,6 @@ func tableKubernetesEndpointSlice(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_endpoint_slice",
 		Description: "EndpointSlice represents a subset of the endpoints that implement a service.",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesEndpointSlice,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesEndpointSlice,
 		},

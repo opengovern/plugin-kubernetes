@@ -13,9 +13,6 @@ func tableKubernetesNode(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_node",
 		Description: "Kubernetes Node is a worker node in Kubernetes.",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesNode,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesNode,
 		},

@@ -12,9 +12,6 @@ func tableKubernetesLimitRange(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_limit_range",
 		Description: "Kubernetes Limit Range",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesLimitRange,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesLimitRange,
 		},

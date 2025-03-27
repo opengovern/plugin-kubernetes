@@ -13,9 +13,6 @@ func tableKubernetesClusterRole(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_cluster_role",
 		Description: "ClusterRole contains rules that represent a set of permissions.",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesClusterRole,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesClusterRole,
 		},

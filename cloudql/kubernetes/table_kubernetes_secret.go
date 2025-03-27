@@ -12,9 +12,6 @@ func tableKubernetesSecret(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_secret",
 		Description: "Secrets can be used to store sensitive information either as individual properties or coarse-grained entries like entire files or JSON blobs.",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesSecret,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesSecret,
 		},

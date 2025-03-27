@@ -12,9 +12,6 @@ func tableKubernetesEvent(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_event",
 		Description: "Kubernetes Event is a report of an event somewhere in the cluster.",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesEvent,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesEvent,
 		},

@@ -12,9 +12,6 @@ func tableKubernetesReplicaController(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_replication_controller",
 		Description: "A Replication Controller makes sure that a pod or homogeneous set of pods are always up and available. If there are too many pods, it will kill some. If there are too few, the Replication Controller will start more.",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesReplicationController,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesReplicationController,
 		},

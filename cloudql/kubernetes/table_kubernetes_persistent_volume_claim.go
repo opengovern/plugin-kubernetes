@@ -13,9 +13,6 @@ func tableKubernetesPersistentVolumeClaim(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_persistent_volume_claim",
 		Description: "A PersistentVolumeClaim (PVC) is a request for storage by a user.",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesPersistentVolumeClaim,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesPersistentVolumeClaim,
 		},

@@ -12,9 +12,6 @@ func tableKubernetesJob(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "kubernetes_job",
 		Description: "A Job creates one or more Pods and will continue to retry execution of the Pods until a specified number of them successfully terminate.",
-		Get: &plugin.GetConfig{
-			Hydrate: opengovernance.GetKubernetesIngress,
-		},
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesIngress,
 		},

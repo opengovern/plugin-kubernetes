@@ -6,7 +6,6 @@ import (
 	"fmt"
 	model "github.com/opengovern/og-describer-kubernetes/discovery/provider"
 	"os"
-	"path/filepath"
 	"time"
 
 	// Zap logger
@@ -327,10 +326,7 @@ func DoDiscovery(kubeConfig string) (*model.KubernetesClusterDescription, error)
 		_ = logger.Sync() // Flush logs before exit
 	}()
 
-	tmpDir := os.TempDir()
-
-	// Create the full path for the kubeconfig file
-	kubeconfigPath := filepath.Join(tmpDir, "kubeconfig.yaml")
+	kubeconfigPath := "./kubeconfig.yaml"
 
 	fmt.Println("kubeConfig", kubeConfig)
 
@@ -367,6 +363,11 @@ func DoDiscovery(kubeConfig string) (*model.KubernetesClusterDescription, error)
 	// --- Determine Exit Code Based on Result ---
 	var result model.KubernetesClusterDescription
 	if err := json.Unmarshal([]byte(resultJSON), &result); err != nil {
+		return nil, err
+	}
+
+	err = os.Remove(kubeconfigPath)
+	if err != nil {
 		return nil, err
 	}
 

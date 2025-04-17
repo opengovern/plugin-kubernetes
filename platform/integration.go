@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/jackc/pgtype"
 	"github.com/opengovern/og-describer-kubernetes/global"
 	constants2 "github.com/opengovern/og-describer-kubernetes/global/constants"
 	"github.com/opengovern/og-describer-kubernetes/global/maps"
@@ -55,10 +56,21 @@ func (i *Integration) DiscoverIntegrations(jsonData []byte) ([]integration.Integ
 		return nil, err
 	}
 
+	info, err := DoDiscovery(credentials.KubeConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	var labels pgtype.JSONB
+	if err := labels.Set(info); err != nil {
+		return nil, err
+	}
+
 	return []integration.Integration{
 		{
 			ProviderID: config.Host,
 			Name:       config.Host,
+			Labels:     labels,
 		},
 	}, nil
 }

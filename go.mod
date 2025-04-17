@@ -17,6 +17,7 @@ require (
 	go.uber.org/zap v1.27.0
 	golang.org/x/net v0.36.0
 	golang.org/x/oauth2 v0.23.0
+	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2
 	google.golang.org/grpc v1.67.1
 	google.golang.org/protobuf v1.35.2
 	k8s.io/api v0.32.0

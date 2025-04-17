@@ -332,11 +332,16 @@ func DoDiscovery(kubeConfig string) (*model.KubernetesClusterDescription, error)
 	// Create the full path for the kubeconfig file
 	kubeconfigPath := filepath.Join(tmpDir, "kubeconfig.yaml")
 
+	fmt.Println("kubeConfig", kubeConfig)
+
 	// Write the string into the file with 0600 permissions
 	err := os.WriteFile(kubeconfigPath, []byte(kubeConfig), 0600)
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Println("kubeconfigPath", kubeconfigPath)
+	time.Sleep(2 * time.Second)
 
 	// --- Basic File Existence Check ---
 	if _, err := os.Stat(kubeconfigPath); os.IsNotExist(err) {

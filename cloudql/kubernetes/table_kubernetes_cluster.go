@@ -16,7 +16,7 @@ func tableKubernetesCluster(ctx context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesCluster,
 		},
-		Columns: commonColumns([]*plugin.Column{
+		Columns: commonGeneralColumns([]*plugin.Column{
 			{
 				Name:        "context_name",
 				Type:        proto.ColumnType_STRING,

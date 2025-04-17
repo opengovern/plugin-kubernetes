@@ -33,6 +33,36 @@ func objectMetadataColumns() []*plugin.Column {
 	}
 }
 
+func commonGeneralColumns(c []*plugin.Column) []*plugin.Column {
+	c = append(c, []*plugin.Column{
+		{
+			Name:        "platform_integration_id",
+			Type:        proto.ColumnType_STRING,
+			Description: "The Platform Integration ID in which the resource is located.",
+			Transform:   transform.FromField("IntegrationID"),
+		},
+		{
+			Name:        "platform_resource_id",
+			Type:        proto.ColumnType_STRING,
+			Description: "The unique ID of the resource in opengovernance.",
+			Transform:   transform.FromField("PlatformID"),
+		},
+		{
+			Name:        "platform_metadata",
+			Type:        proto.ColumnType_JSON,
+			Description: "The metadata of the resource",
+			Transform:   transform.FromField("Metadata").Transform(marshalJSON),
+		},
+		{
+			Name:        "platform_resource_description",
+			Type:        proto.ColumnType_JSON,
+			Description: "The full model description of the resource",
+			Transform:   transform.FromField("Description").Transform(marshalJSON),
+		},
+	}...)
+	return c
+}
+
 func commonColumns(c []*plugin.Column) []*plugin.Column {
 	res := objectMetadataColumns()
 	res = append(res, c...)

@@ -168,6 +168,14 @@
   "Model": "KubernetesRoleBinding",
   "Params": []
  },{
+  "ResourceName": "Kubernetes/Cluster",
+  "Tags": {},
+  "ListDescriber": "DescribeByIntegration(describers.KubernetesCluster)",
+  "GetDescriber": "",
+  "SteampipeTable": "kubernetes_cluster",
+  "Model": "KubernetesCluster",
+  "Params": []
+ },{
   "ResourceName": "Kubernetes/ClusterRole",
   "Tags": {},
   "ListDescriber": "DescribeByIntegration(describers.KubernetesClusterRole)",

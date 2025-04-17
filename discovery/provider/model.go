@@ -19,6 +19,14 @@ import (
 type Metadata struct {
 }
 
+type KubernetesClusterDescription struct {
+	AuthMethod            string `json:"auth_method"`
+	ContextName           string `json:"context_name"`
+	Endpoint              string `json:"endpoint"`
+	TLSServerVerification bool   `json:"tls_server_verification"`
+	ServerVersion         string `json:"server_version"`
+}
+
 type KubernetesClusterRoleDescription struct {
 	MetaObject  metav1.ObjectMeta
 	ClusterRole rbacv1.ClusterRole

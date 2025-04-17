@@ -281,6 +281,19 @@ var ResourceTypes = map[string]model.ResourceType{
 		GetDescriber:         nil,
 	},
 
+	"Kubernetes/Cluster": {
+		IntegrationType:      constants.IntegrationName,
+		ResourceName:         "Kubernetes/Cluster",
+		Tags:                 map[string][]string{
+        },
+		Labels:               map[string]string{
+        },
+		Annotations:          map[string]string{
+        },
+		ListDescriber:        provider.DescribeByIntegration(describers.KubernetesCluster),
+		GetDescriber:         nil,
+	},
+
 	"Kubernetes/ClusterRole": {
 		IntegrationType:      constants.IntegrationName,
 		ResourceName:         "Kubernetes/ClusterRole",
@@ -588,6 +601,13 @@ var ResourceTypeConfigs = map[string]*interfaces.ResourceTypeConfiguration{
 		
 	},
 
+	"Kubernetes/Cluster": {
+		Name:         "Kubernetes/Cluster",
+		IntegrationType:      constants.IntegrationName,
+		Description:                 "",
+		
+	},
+
 	"Kubernetes/ClusterRole": {
 		Name:         "Kubernetes/ClusterRole",
 		IntegrationType:      constants.IntegrationName,
@@ -696,6 +716,7 @@ var ResourceTypesList = []string{
   "Kubernetes/NetworkPolicy",
   "Kubernetes/Role",
   "Kubernetes/RoleBinding",
+  "Kubernetes/Cluster",
   "Kubernetes/ClusterRole",
   "Kubernetes/ClusterRoleBinding",
   "Kubernetes/PodDisruptionBudget",

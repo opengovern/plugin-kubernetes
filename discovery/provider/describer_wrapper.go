@@ -16,6 +16,7 @@ type Client struct {
 	CrdsClient       *apiextensionsclientset.Clientset
 	DynamicClient    *dynamic.DynamicClient
 	HelmClient       helmclient.Client
+	KubeConfig       string
 }
 
 func DescribeByIntegration(describe func(context.Context, Client, string, *model.StreamSender) ([]model.Resource, error)) model.ResourceDescriber {
@@ -55,6 +56,7 @@ func DescribeByIntegration(describe func(context.Context, Client, string, *model
 			CrdsClient:       crdClient,
 			DynamicClient:    dynmicClient,
 			HelmClient:       helmClient,
+			KubeConfig:       cfg.KubeConfig,
 		}
 		values, err = describe(ctx, client, "", stream)
 		if err != nil {

@@ -19,6 +19,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 		},
 		DefaultTransform: transform.FromCamel(),
 		TableMap: map[string]*plugin.Table{
+			"kubernetes_cluster":                    tableKubernetesCluster(ctx),
 			"kubernetes_cluster_role":               tableKubernetesClusterRole(ctx),
 			"kubernetes_cluster_role_binding":       tableKubernetesClusterRoleBinding(ctx),
 			"kubernetes_config_map":                 tableKubernetesConfigMap(ctx),

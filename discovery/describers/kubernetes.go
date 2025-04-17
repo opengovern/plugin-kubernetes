@@ -10,6 +10,29 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+func KubernetesCluster(ctx context.Context, client model.Client, extra string, stream *models.StreamSender) ([]models.Resource, error) {
+	var allValues []models.Resource
+
+	cluster, err := DoDiscovery(client.KubeConfig)
+	if err != nil {
+		return nil, err
+	}
+	resource := models.Resource{
+		ID:          fmt.Sprintf("cluster/%s", cluster.ContextName),
+		Name:        cluster.ContextName,
+		Description: cluster,
+	}
+
+	if stream != nil {
+		if err := (*stream)(resource); err != nil {
+			return allValues, fmt.Errorf("error streaming resource: %w", err)
+		}
+	} else {
+		allValues = append(allValues, resource)
+	}
+	return allValues, nil
+}
+
 func KubernetesClusterRole(ctx context.Context, client model.Client, extra string, stream *models.StreamSender) ([]models.Resource, error) {
 	var allValues []models.Resource
 

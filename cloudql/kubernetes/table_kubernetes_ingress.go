@@ -10,7 +10,7 @@ import (
 
 func tableKubernetesIngress(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "kubernetes_ingress",
+		Name:        "k8_ingress",
 		Description: "Ingress exposes HTTP and HTTPS routes from outside the cluster to services within the cluster. Traffic routing is controlled by rules defined on the Ingress resource.",
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesIngress,

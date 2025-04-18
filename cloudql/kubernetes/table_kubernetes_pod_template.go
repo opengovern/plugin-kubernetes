@@ -10,7 +10,7 @@ import (
 
 func tableKubernetesPodTemplate(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "kubernetes_pod_template",
+		Name:        "k8_pod_template",
 		Description: "Kubernetes Pod Template is a collection of templates for creating copies of a predefined pod.",
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesPodTemplate,

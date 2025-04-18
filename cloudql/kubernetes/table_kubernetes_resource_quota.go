@@ -10,7 +10,7 @@ import (
 
 func tableKubernetesResourceQuota(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "kubernetes_resource_quota",
+		Name:        "k8_resource_quota",
 		Description: "Kubernetes Resource Quota",
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesResourceQuota,

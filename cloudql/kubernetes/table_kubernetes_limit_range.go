@@ -10,7 +10,7 @@ import (
 
 func tableKubernetesLimitRange(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "kubernetes_limit_range",
+		Name:        "k8_limit_range",
 		Description: "Kubernetes Limit Range",
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesLimitRange,

@@ -10,7 +10,7 @@ import (
 
 func tableKubernetesReplicaSet(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "kubernetes_replicaset",
+		Name:        "k8_replicaset",
 		Description: "Kubernetes replica set ensures that a specified number of pod replicas are running at any given time.",
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesReplicaSet,

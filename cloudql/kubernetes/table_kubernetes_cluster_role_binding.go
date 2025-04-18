@@ -11,7 +11,7 @@ import (
 
 func tableKubernetesClusterRoleBinding(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "kubernetes_cluster_role_binding",
+		Name:        "k8_cluster_role_binding",
 		Description: "A ClusterRoleBinding grants the permissions defined in a cluster role to a user or set of users. Access granted by ClusterRoleBinding is cluster-wide.",
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesClusterRoleBinding,

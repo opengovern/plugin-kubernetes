@@ -10,7 +10,7 @@ import (
 
 func tableKubernetesDeployment(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "kubernetes_deployment",
+		Name:        "k8_deployment",
 		Description: "Kubernetes Deployment enables declarative updates for Pods and ReplicaSets.",
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesDeployment,

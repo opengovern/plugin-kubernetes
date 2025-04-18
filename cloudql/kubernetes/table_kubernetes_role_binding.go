@@ -10,7 +10,7 @@ import (
 
 func tableKubernetesRoleBinding(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "kubernetes_role_binding",
+		Name:        "k8_role_binding",
 		Description: "A role binding grants the permissions defined in a role to a user or set of users. It holds a list of subjects (users, groups, or service accounts), and a reference to the role being granted.",
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesRoleBinding,

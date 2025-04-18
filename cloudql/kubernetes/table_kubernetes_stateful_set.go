@@ -10,7 +10,7 @@ import (
 
 func tableKubernetesStatefulSet(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "kubernetes_stateful_set",
+		Name:        "k8_stateful_set",
 		Description: "A statefulSet is the workload API object used to manage stateful applications.",
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesStatefulSet,

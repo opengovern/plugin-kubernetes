@@ -10,7 +10,7 @@ import (
 
 func tableKubernetesPod(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "kubernetes_pod",
+		Name:        "k8_pod",
 		Description: "Kubernetes Pod is a collection of containers that can run on a host. This resource is created by clients and scheduled onto hosts.",
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesPod,
@@ -422,7 +422,7 @@ func transformPodCpuAndMemoryUnit(ctx context.Context, d *transform.TransformDat
 			if limit.Cpu().String() != "" && !limit.Cpu().IsZero() {
 				cpu, err := normalizeCPUToMilliCores(limit.Cpu().String())
 				if err != nil {
-					plugin.Logger(ctx).Error("kubernetes_pod.transformPodCpuAndMemoryUnit", "error in parsing the CPU value", err)
+					plugin.Logger(ctx).Error("k8_pod.transformPodCpuAndMemoryUnit", "error in parsing the CPU value", err)
 					return nil, err
 				}
 				limitCPUMemoryMap["cpu"] = cpu
@@ -431,7 +431,7 @@ func transformPodCpuAndMemoryUnit(ctx context.Context, d *transform.TransformDat
 			if limit.Memory().String() != "" && !limit.Memory().IsZero() {
 				memory, err := normalizeMemoryToBytes(limit.Memory().String())
 				if err != nil {
-					plugin.Logger(ctx).Error("kubernetes_pod.transformPodCpuAndMemoryUnit", "error in parsing the memory value", err)
+					plugin.Logger(ctx).Error("k8_pod.transformPodCpuAndMemoryUnit", "error in parsing the memory value", err)
 					return nil, err
 				}
 				limitCPUMemoryMap["memory"] = memory
@@ -453,7 +453,7 @@ func transformPodCpuAndMemoryUnit(ctx context.Context, d *transform.TransformDat
 			if request.Cpu().String() != "" && !request.Cpu().IsZero() {
 				cpu, err := normalizeCPUToMilliCores(request.Cpu().String())
 				if err != nil {
-					plugin.Logger(ctx).Error("kubernetes_pod.transformPodCpuAndMemoryUnit", "error in parsing the CPU value", err)
+					plugin.Logger(ctx).Error("k8_pod.transformPodCpuAndMemoryUnit", "error in parsing the CPU value", err)
 					return nil, err
 				}
 				requestCPUMemoryMap["cpu"] = cpu
@@ -462,7 +462,7 @@ func transformPodCpuAndMemoryUnit(ctx context.Context, d *transform.TransformDat
 			if request.Memory().String() != "" && !request.Memory().IsZero() {
 				memory, err := normalizeMemoryToBytes(request.Memory().String())
 				if err != nil {
-					plugin.Logger(ctx).Error("kubernetes_pod.transformPodCpuAndMemoryUnit", "error in parsing the memory value", err)
+					plugin.Logger(ctx).Error("k8_pod.transformPodCpuAndMemoryUnit", "error in parsing the memory value", err)
 					return nil, err
 				}
 				requestCPUMemoryMap["memory"] = memory

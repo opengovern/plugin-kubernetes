@@ -10,7 +10,7 @@ import (
 
 func tableKubernetesRole(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "kubernetes_role",
+		Name:        "k8_role",
 		Description: "Role contains rules that represent a set of permissions.",
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesRole,

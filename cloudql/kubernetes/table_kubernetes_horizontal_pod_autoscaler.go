@@ -10,7 +10,7 @@ import (
 
 func tableKubernetesHorizontalPodAutoscaler(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "kubernetes_horizontal_pod_autoscaler",
+		Name:        "k8_horizontal_pod_autoscaler",
 		Description: "Kubernetes HorizontalPodAutoscaler is the configuration for a horizontal pod autoscaler, which automatically manages the replica count of any resource implementing the scale subresource based on the metrics specified.",
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesHorizontalPodAutoscaler,

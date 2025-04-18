@@ -10,7 +10,7 @@ import (
 
 func tableKubernetesDaemonset(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "kubernetes_daemonset",
+		Name:        "k8_daemonset",
 		Description: "A DaemonSet ensures that all (or some) Nodes run a copy of a Pod.",
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesDaemonSet,

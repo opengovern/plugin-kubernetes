@@ -11,7 +11,7 @@ import (
 
 func tableKubernetesNode(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "kubernetes_node",
+		Name:        "k8_node",
 		Description: "Kubernetes Node is a worker node in Kubernetes.",
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesNode,

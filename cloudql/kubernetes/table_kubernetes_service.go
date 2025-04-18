@@ -10,7 +10,7 @@ import (
 
 func tableKubernetesService(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "kubernetes_service",
+		Name:        "k8_service",
 		Description: "A service provides an abstract way to expose an application running on a set of Pods as a network service.",
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesService,

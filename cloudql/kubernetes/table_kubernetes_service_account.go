@@ -10,7 +10,7 @@ import (
 
 func tableKubernetesServiceAccount(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "kubernetes_service_account",
+		Name:        "k8_service_account",
 		Description: "A service account provides an identity for processes that run in a Pod.",
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesServiceAccount,

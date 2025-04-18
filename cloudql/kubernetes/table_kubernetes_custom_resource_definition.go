@@ -10,7 +10,7 @@ import (
 
 func tableKubernetesCustomResourceDefinition(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "kubernetes_custom_resource_definition",
+		Name:        "k8_custom_resource_definition",
 		Description: "Kubernetes Custom Resource Definition.",
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesCustomResourceDefinition,

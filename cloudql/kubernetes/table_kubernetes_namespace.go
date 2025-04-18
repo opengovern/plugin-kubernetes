@@ -10,7 +10,7 @@ import (
 
 func tableKubernetesNamespace(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "kubernetes_namespace",
+		Name:        "k8_namespace",
 		Description: "Kubernetes Namespace provides a scope for Names.",
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesNamespace,

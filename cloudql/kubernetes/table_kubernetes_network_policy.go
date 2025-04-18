@@ -10,7 +10,7 @@ import (
 
 func tableKubernetesNetworkPolicy(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "kubernetes_network_policy",
+		Name:        "k8_network_policy",
 		Description: "Network policy specifiy how pods are allowed to communicate with each other and with other network endpoints.",
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesNetworkPolicy,

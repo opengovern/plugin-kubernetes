@@ -10,7 +10,7 @@ import (
 
 func tableKubernetesStorageClass(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
-		Name:        "kubernetes_storage_class",
+		Name:        "k8_storage_class",
 		Description: "Storage class provides a way for administrators to describe the classes of storage they offer.",
 		List: &plugin.ListConfig{
 			Hydrate: opengovernance.ListKubernetesStorageClass,

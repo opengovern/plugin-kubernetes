@@ -3,8 +3,6 @@ package kubernetes
 import (
 	"context"
 	"encoding/json"
-	"github.com/shurcooL/githubv4"
-	"time"
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"

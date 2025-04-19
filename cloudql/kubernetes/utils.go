@@ -10,6 +10,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func v1TimeToRFC3339(_ context.Context, d *transform.TransformData) (interface{}, error) {
@@ -25,6 +26,13 @@ func v1TimeToRFC3339(_ context.Context, d *transform.TransformData) (interface{}
 			return nil, nil
 		}
 		return v.ToUnstructured(), nil
+	case time.Time:
+		return v.Format(time.RFC3339), nil
+	case *time.Time:
+		if v == nil {
+			return nil, nil
+		}
+		return v.Format(time.RFC3339), nil
 	default:
 		return nil, fmt.Errorf("invalid time format %T! ", v)
 	}
@@ -43,24 +51,16 @@ func v1MicroTimeToRFC3339(_ context.Context, d *transform.TransformData) (interf
 			return nil, nil
 		}
 		return metav1.NewTime(v.Time).ToUnstructured(), nil
+	case time.Time:
+		return v.Format(time.RFC3339), nil
+	case *time.Time:
+		if v == nil {
+			return nil, nil
+		}
+		return v.Format(time.RFC3339), nil
 	default:
 		return nil, fmt.Errorf("invalid time format %T! ", v)
 	}
-}
-
-func labelSelectorToString(_ context.Context, d *transform.TransformData) (interface{}, error) {
-	if d.Value == nil {
-		return nil, nil
-	}
-
-	selector := d.Value.(*metav1.LabelSelector)
-
-	ss, err := metav1.LabelSelectorAsSelector(selector)
-	if err != nil {
-		return nil, err
-	}
-
-	return ss.String(), nil
 }
 
 func selectorMapToString(ctx context.Context, d *transform.TransformData) (interface{}, error) {

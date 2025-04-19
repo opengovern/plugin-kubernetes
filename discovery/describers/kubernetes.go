@@ -297,12 +297,18 @@ func KubernetesDaemonSet(ctx context.Context, client model.Client, extra string,
 		var resource models.Resource
 		// We don't need to include the managed fields in the description, also it causes issues in elastic search mapping generation
 		daemonSet.ManagedFields = nil
+		labelSelectorString := ""
+		ss, err := metav1.LabelSelectorAsSelector(daemonSet.Spec.Selector)
+		if err == nil {
+			labelSelectorString = ss.String()
+		}
 		resource = models.Resource{
 			ID:   fmt.Sprintf("daemonset/%s/%s", daemonSet.Namespace, daemonSet.Name),
 			Name: fmt.Sprintf("%s/%s", daemonSet.Namespace, daemonSet.Name),
 			Description: model.KubernetesDaemonSetDescription{
-				MetaObject: helpers.ConvertObjectMeta(&daemonSet.ObjectMeta),
-				DaemonSet:  helpers.ConvertDaemonSet(&daemonSet),
+				MetaObject:          helpers.ConvertObjectMeta(&daemonSet.ObjectMeta),
+				DaemonSet:           helpers.ConvertDaemonSet(&daemonSet),
+				LabelSelectorString: labelSelectorString,
 			},
 		}
 
@@ -330,12 +336,18 @@ func KubernetesDeployment(ctx context.Context, client model.Client, extra string
 		var resource models.Resource
 		// We don't need to include the managed fields in the description, also it causes issues in elastic search mapping generation
 		deployment.ManagedFields = nil
+		labelSelectorString := ""
+		ss, err := metav1.LabelSelectorAsSelector(deployment.Spec.Selector)
+		if err == nil {
+			labelSelectorString = ss.String()
+		}
 		resource = models.Resource{
 			ID:   fmt.Sprintf("deployment/%s/%s", deployment.Namespace, deployment.Name),
 			Name: fmt.Sprintf("%s/%s", deployment.Namespace, deployment.Name),
 			Description: model.KubernetesDeploymentDescription{
-				MetaObject: helpers.ConvertObjectMeta(&deployment.ObjectMeta),
-				Deployment: helpers.ConvertDeployment(&deployment),
+				MetaObject:          helpers.ConvertObjectMeta(&deployment.ObjectMeta),
+				Deployment:          helpers.ConvertDeployment(&deployment),
+				LabelSelectorString: labelSelectorString,
 			},
 		}
 
@@ -523,12 +535,18 @@ func KubernetesJob(ctx context.Context, client model.Client, extra string, strea
 		var resource models.Resource
 		// We don't need to include the managed fields in the description, also it causes issues in elastic search mapping
 		job.ManagedFields = nil
+		labelSelectorString := ""
+		ss, err := metav1.LabelSelectorAsSelector(job.Spec.Selector)
+		if err == nil {
+			labelSelectorString = ss.String()
+		}
 		resource = models.Resource{
 			ID:   fmt.Sprintf("job/%s/%s", job.Namespace, job.Name),
 			Name: fmt.Sprintf("%s/%s", job.Namespace, job.Name),
 			Description: model.KubernetesJobDescription{
-				MetaObject: helpers.ConvertObjectMeta(&job.ObjectMeta),
-				Job:        job,
+				MetaObject:          helpers.ConvertObjectMeta(&job.ObjectMeta),
+				Job:                 job,
+				LabelSelectorString: labelSelectorString,
 			},
 		}
 		if stream != nil {
@@ -851,12 +869,18 @@ func KubernetesReplicaSet(ctx context.Context, client model.Client, extra string
 		var resource models.Resource
 		// We don't need to include the managed fields in the description, also it causes issues in elastic search mapping
 		replicaSet.ManagedFields = nil
+		labelSelectorString := ""
+		ss, err := metav1.LabelSelectorAsSelector(replicaSet.Spec.Selector)
+		if err == nil {
+			labelSelectorString = ss.String()
+		}
 		resource = models.Resource{
 			ID:   fmt.Sprintf("replicaset/%s/%s", replicaSet.Namespace, replicaSet.Name),
 			Name: fmt.Sprintf("%s/%s", replicaSet.Namespace, replicaSet.Name),
 			Description: model.KubernetesReplicaSetDescription{
-				MetaObject: helpers.ConvertObjectMeta(&replicaSet.ObjectMeta),
-				ReplicaSet: helpers.ConvertReplicaSet(&replicaSet),
+				MetaObject:          helpers.ConvertObjectMeta(&replicaSet.ObjectMeta),
+				ReplicaSet:          helpers.ConvertReplicaSet(&replicaSet),
+				LabelSelectorString: labelSelectorString,
 			},
 		}
 

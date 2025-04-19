@@ -27,7 +27,7 @@ func tableKubernetesDeployment(ctx context.Context) *plugin.Table {
 				Name:        "selector_query",
 				Type:        proto.ColumnType_STRING,
 				Description: "A query string representation of the selector.",
-				Transform:   transform.FromField("Description.Deployment.Spec.Selector").Transform(labelSelectorToString),
+				Transform:   transform.FromField("Description.LabelSelectorString"),
 			},
 			{
 				Name:        "selector",

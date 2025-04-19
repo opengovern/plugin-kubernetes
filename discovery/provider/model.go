@@ -50,13 +50,15 @@ type KubernetesCustomResourceDefinitionDescription struct {
 }
 
 type KubernetesDaemonSetDescription struct {
-	MetaObject helpers.ObjectMeta
-	DaemonSet  helpers.DaemonSet
+	MetaObject          helpers.ObjectMeta
+	DaemonSet           helpers.DaemonSet
+	LabelSelectorString string
 }
 
 type KubernetesDeploymentDescription struct {
-	MetaObject helpers.ObjectMeta
-	Deployment helpers.Deployment
+	MetaObject          helpers.ObjectMeta
+	Deployment          helpers.Deployment
+	LabelSelectorString string
 }
 
 type KubernetesEndpointSliceDescription struct {
@@ -85,8 +87,9 @@ type KubernetesIngressDescription struct {
 }
 
 type KubernetesJobDescription struct {
-	MetaObject helpers.ObjectMeta
-	Job        batchv1.Job
+	MetaObject          helpers.ObjectMeta
+	Job                 batchv1.Job
+	LabelSelectorString string
 }
 
 type KubernetesLimitRangeDescription struct {
@@ -135,8 +138,9 @@ type KubernetesPodTemplateDescription struct {
 }
 
 type KubernetesReplicaSetDescription struct {
-	MetaObject helpers.ObjectMeta
-	ReplicaSet helpers.ReplicaSet
+	MetaObject          helpers.ObjectMeta
+	ReplicaSet          helpers.ReplicaSet
+	LabelSelectorString string
 }
 
 type KubernetesReplicationControllerDescription struct {

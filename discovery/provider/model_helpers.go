@@ -25,6 +25,9 @@ func ConvertTime(timestamp metav1.Time) Time {
 }
 
 func ConvertTimePtr(timestamp *metav1.Time) *Time {
+	if timestamp == nil {
+		return nil
+	}
 	return &Time{
 		timestamp.Time,
 	}
@@ -40,6 +43,9 @@ func ConvertFieldsV1(raw metav1.FieldsV1) FieldsV1 {
 	}
 }
 func ConvertFieldsV1Ptr(raw *metav1.FieldsV1) *FieldsV1 {
+	if raw == nil {
+		return nil
+	}
 	return &FieldsV1{
 		raw.Raw,
 	}
@@ -125,23 +131,23 @@ type ObjectMeta struct {
 	ManagedFields              []ManagedFieldsEntry
 }
 
-func ConvertObjectMeta(obj metav1.ObjectMeta) ObjectMeta {
+func ConvertObjectMeta(obj *metav1.ObjectMeta) ObjectMeta {
 	return ObjectMeta{
-		Name:                       obj.GetName(),
-		GenerateName:               obj.GetGenerateName(),
-		Namespace:                  obj.GetNamespace(),
+		Name:                       obj.Name,
+		GenerateName:               obj.GenerateName,
+		Namespace:                  obj.Namespace,
 		SelfLink:                   obj.GetSelfLink(),
-		UID:                        obj.GetUID(),
-		ResourceVersion:            obj.GetResourceVersion(),
-		Generation:                 obj.GetGeneration(),
-		CreationTimestamp:          ConvertTime(obj.GetCreationTimestamp()),
-		DeletionTimestamp:          ConvertTimePtr(obj.GetDeletionTimestamp()),
-		DeletionGracePeriodSeconds: obj.GetDeletionGracePeriodSeconds(),
-		Labels:                     obj.GetLabels(),
-		Annotations:                obj.GetAnnotations(),
-		OwnerReferences:            ConvertOwnerReferences(obj.GetOwnerReferences()),
-		Finalizers:                 obj.GetFinalizers(),
-		ManagedFields:              ConvertManagedFieldsEntries(obj.GetManagedFields()),
+		UID:                        obj.UID,
+		ResourceVersion:            obj.ResourceVersion,
+		Generation:                 obj.Generation,
+		CreationTimestamp:          ConvertTime(obj.CreationTimestamp),
+		DeletionTimestamp:          ConvertTimePtr(obj.DeletionTimestamp),
+		DeletionGracePeriodSeconds: obj.DeletionGracePeriodSeconds,
+		Labels:                     obj.Labels,
+		Annotations:                obj.Annotations,
+		OwnerReferences:            ConvertOwnerReferences(obj.OwnerReferences),
+		Finalizers:                 obj.Finalizers,
+		ManagedFields:              ConvertManagedFieldsEntries(obj.ManagedFields),
 	}
 }
 

@@ -18,19 +18,15 @@ type Time struct {
 	time.Time
 }
 
-func ConvertTime(timestamp metav1.Time) Time {
-	return Time{
-		timestamp.Time,
-	}
+func ConvertTime(timestamp metav1.Time) time.Time {
+	return timestamp.Time
 }
 
-func ConvertTimePtr(timestamp *metav1.Time) *Time {
+func ConvertTimePtr(timestamp *metav1.Time) *time.Time {
 	if timestamp == nil {
 		return nil
 	}
-	return &Time{
-		timestamp.Time,
-	}
+	return &timestamp.Time
 }
 
 type FieldsV1 struct {
@@ -79,7 +75,7 @@ type ManagedFieldsEntry struct {
 	Manager     string
 	Operation   ManagedFieldsOperationType
 	APIVersion  string
-	Time        *Time
+	Time        *time.Time
 	FieldsType  string
 	FieldsV1    *FieldsV1
 	Subresource string
@@ -121,8 +117,8 @@ type ObjectMeta struct {
 	UID                        types.UID
 	ResourceVersion            string
 	Generation                 int64
-	CreationTimestamp          Time
-	DeletionTimestamp          *Time
+	CreationTimestamp          time.Time
+	DeletionTimestamp          *time.Time
 	DeletionGracePeriodSeconds *int64
 	Labels                     map[string]string
 	Annotations                map[string]string

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/opengovern/og-describer-kubernetes/discovery/pkg/models"
 	model "github.com/opengovern/og-describer-kubernetes/discovery/provider"
+	"github.com/opengovern/og-describer-kubernetes/discovery/provider/helpers"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -49,12 +50,12 @@ func KubernetesClusterRole(ctx context.Context, client model.Client, extra strin
 			ID:   fmt.Sprintf("clusterrole/%s", clusterRole.Name),
 			Name: clusterRole.Name,
 			Description: model.KubernetesClusterRoleDescription{
-				MetaObject: model.ConvertObjectMeta(&clusterRole.ObjectMeta),
-				ClusterRole: model.ClusterRole{
-					TypeMeta:        model.ConvertTypeMeta(clusterRole.TypeMeta),
-					ObjectMeta:      model.ConvertObjectMeta(&clusterRole.ObjectMeta),
-					Rules:           model.ConvertPolicyRules(clusterRole.Rules),
-					AggregationRule: model.ConvertAggregationRule(clusterRole.AggregationRule),
+				MetaObject: helpers.ConvertObjectMeta(&clusterRole.ObjectMeta),
+				ClusterRole: helpers.ClusterRole{
+					TypeMeta:        helpers.ConvertTypeMeta(clusterRole.TypeMeta),
+					ObjectMeta:      helpers.ConvertObjectMeta(&clusterRole.ObjectMeta),
+					Rules:           helpers.ConvertPolicyRules(clusterRole.Rules),
+					AggregationRule: helpers.ConvertAggregationRule(clusterRole.AggregationRule),
 				},
 			},
 		}
@@ -87,12 +88,12 @@ func KubernetesClusterRoleBinding(ctx context.Context, client model.Client, extr
 			ID:   fmt.Sprintf("clusterrolebinding/%s", clusterRoleBinding.Name),
 			Name: clusterRoleBinding.Name,
 			Description: model.KubernetesClusterRoleBindingDescription{
-				MetaObject: model.ConvertObjectMeta(&clusterRoleBinding.ObjectMeta),
-				ClusterRoleBinding: model.ClusterRoleBinding{
-					TypeMeta:   model.ConvertTypeMeta(clusterRoleBinding.TypeMeta),
-					ObjectMeta: model.ConvertObjectMeta(&clusterRoleBinding.ObjectMeta),
-					Subjects:   model.ConvertSubject(clusterRoleBinding.Subjects),
-					RoleRef:    model.ConvertRoleRef(clusterRoleBinding.RoleRef),
+				MetaObject: helpers.ConvertObjectMeta(&clusterRoleBinding.ObjectMeta),
+				ClusterRoleBinding: helpers.ClusterRoleBinding{
+					TypeMeta:   helpers.ConvertTypeMeta(clusterRoleBinding.TypeMeta),
+					ObjectMeta: helpers.ConvertObjectMeta(&clusterRoleBinding.ObjectMeta),
+					Subjects:   helpers.ConvertSubject(clusterRoleBinding.Subjects),
+					RoleRef:    helpers.ConvertRoleRef(clusterRoleBinding.RoleRef),
 				},
 			},
 		}
@@ -129,8 +130,14 @@ func KubernetesConfigMap(ctx context.Context, client model.Client, extra string,
 			ID:   fmt.Sprintf("configmap/%s/%s", configMap.Namespace, configMap.Name),
 			Name: fmt.Sprintf("%s/%s", configMap.Namespace, configMap.Name),
 			Description: model.KubernetesConfigMapDescription{
-				MetaObject: model.ConvertObjectMeta(&configMap.ObjectMeta),
-				ConfigMap:  configMap,
+				MetaObject: helpers.ConvertObjectMeta(&configMap.ObjectMeta),
+				ConfigMap: helpers.ConfigMap{
+					TypeMeta:   helpers.ConvertTypeMeta(configMap.TypeMeta),
+					ObjectMeta: helpers.ConvertObjectMeta(&configMap.ObjectMeta),
+					Immutable:  configMap.Immutable,
+					Data:       configMap.Data,
+					BinaryData: configMap.BinaryData,
+				},
 			},
 		}
 
@@ -162,7 +169,7 @@ func KubernetesCronJob(ctx context.Context, client model.Client, extra string, s
 			ID:   fmt.Sprintf("cronjob/%s/%s", cronJob.Namespace, cronJob.Name),
 			Name: fmt.Sprintf("%s/%s", cronJob.Namespace, cronJob.Name),
 			Description: model.KubernetesCronJobDescription{
-				MetaObject: model.ConvertObjectMeta(&cronJob.ObjectMeta),
+				MetaObject: helpers.ConvertObjectMeta(&cronJob.ObjectMeta),
 				CronJob:    cronJob,
 			},
 		}
@@ -210,7 +217,7 @@ func KubernetesCustomResource(ctx context.Context, client model.Client, extra st
 					ID:   fmt.Sprintf("customresource/%s.%s/%s/%s", item.GetKind(), item.GetAPIVersion(), item.GetNamespace(), item.GetName()),
 					Name: fmt.Sprintf("%s/%s/%s", customResourceDefinition.Name, item.GetNamespace(), item.GetName()),
 					Description: model.KubernetesCustomResourceDescription{
-						MetaObject: model.ObjectMeta{
+						MetaObject: helpers.ObjectMeta{
 							Name:                       item.GetName(),
 							GenerateName:               item.GetGenerateName(),
 							Namespace:                  item.GetNamespace(),
@@ -218,12 +225,12 @@ func KubernetesCustomResource(ctx context.Context, client model.Client, extra st
 							UID:                        item.GetUID(),
 							ResourceVersion:            item.GetResourceVersion(),
 							Generation:                 item.GetGeneration(),
-							CreationTimestamp:          model.ConvertTime(item.GetCreationTimestamp()),
-							DeletionTimestamp:          model.ConvertTimePtr(item.GetDeletionTimestamp()),
+							CreationTimestamp:          helpers.ConvertTime(item.GetCreationTimestamp()),
+							DeletionTimestamp:          helpers.ConvertTimePtr(item.GetDeletionTimestamp()),
 							DeletionGracePeriodSeconds: item.GetDeletionGracePeriodSeconds(),
 							Labels:                     item.GetLabels(),
 							Annotations:                item.GetAnnotations(),
-							OwnerReferences:            model.ConvertOwnerReferences(item.GetOwnerReferences()),
+							OwnerReferences:            helpers.ConvertOwnerReferences(item.GetOwnerReferences()),
 							Finalizers:                 item.GetFinalizers(),
 						},
 						CustomResource:     item,
@@ -261,7 +268,7 @@ func KubernetesCustomResourceDefinition(ctx context.Context, client model.Client
 			ID:   fmt.Sprintf("customresourcedefinition/%s", customResourceDefinition.Name),
 			Name: customResourceDefinition.Name,
 			Description: model.KubernetesCustomResourceDefinitionDescription{
-				MetaObject:               model.ConvertObjectMeta(&customResourceDefinition.ObjectMeta),
+				MetaObject:               helpers.ConvertObjectMeta(&customResourceDefinition.ObjectMeta),
 				CustomResourceDefinition: customResourceDefinition,
 			},
 		}
@@ -294,7 +301,7 @@ func KubernetesDaemonSet(ctx context.Context, client model.Client, extra string,
 			ID:   fmt.Sprintf("daemonset/%s/%s", daemonSet.Namespace, daemonSet.Name),
 			Name: fmt.Sprintf("%s/%s", daemonSet.Namespace, daemonSet.Name),
 			Description: model.KubernetesDaemonSetDescription{
-				MetaObject: model.ConvertObjectMeta(&daemonSet.ObjectMeta),
+				MetaObject: helpers.ConvertObjectMeta(&daemonSet.ObjectMeta),
 				DaemonSet:  daemonSet,
 			},
 		}
@@ -327,7 +334,7 @@ func KubernetesDeployment(ctx context.Context, client model.Client, extra string
 			ID:   fmt.Sprintf("deployment/%s/%s", deployment.Namespace, deployment.Name),
 			Name: fmt.Sprintf("%s/%s", deployment.Namespace, deployment.Name),
 			Description: model.KubernetesDeploymentDescription{
-				MetaObject: model.ConvertObjectMeta(&deployment.ObjectMeta),
+				MetaObject: helpers.ConvertObjectMeta(&deployment.ObjectMeta),
 				Deployment: deployment,
 			},
 		}
@@ -360,7 +367,7 @@ func KubernetesEndpointSlice(ctx context.Context, client model.Client, extra str
 			ID:   fmt.Sprintf("endpointslice/%s/%s", endpointSlice.Namespace, endpointSlice.Name),
 			Name: fmt.Sprintf("%s/%s", endpointSlice.Namespace, endpointSlice.Name),
 			Description: model.KubernetesEndpointSliceDescription{
-				MetaObject:    model.ConvertObjectMeta(&endpointSlice.ObjectMeta),
+				MetaObject:    helpers.ConvertObjectMeta(&endpointSlice.ObjectMeta),
 				EndpointSlice: endpointSlice,
 			},
 		}
@@ -392,7 +399,7 @@ func KubernetesEndpoint(ctx context.Context, client model.Client, extra string, 
 			ID:   fmt.Sprintf("endpoint/%s/%s", endpoint.Namespace, endpoint.Name),
 			Name: fmt.Sprintf("%s/%s", endpoint.Namespace, endpoint.Name),
 			Description: model.KubernetesEndpointDescription{
-				MetaObject: model.ConvertObjectMeta(&endpoint.ObjectMeta),
+				MetaObject: helpers.ConvertObjectMeta(&endpoint.ObjectMeta),
 				Endpoint:   endpoint,
 			},
 		}
@@ -424,7 +431,7 @@ func KubernetesEvent(ctx context.Context, client model.Client, extra string, str
 			ID:   fmt.Sprintf("event/%s/%s", event.Namespace, event.Name),
 			Name: fmt.Sprintf("%s/%s", event.Namespace, event.Name),
 			Description: model.KubernetesEventDescription{
-				MetaObject: model.ConvertObjectMeta(&event.ObjectMeta),
+				MetaObject: helpers.ConvertObjectMeta(&event.ObjectMeta),
 				Event:      event,
 			},
 		}
@@ -456,7 +463,7 @@ func KubernetesHorizontalPodAutoscaler(ctx context.Context, client model.Client,
 			ID:   fmt.Sprintf("horizontalpodautoscaler/%s/%s", horizontalPodAutoscaler.Namespace, horizontalPodAutoscaler.Name),
 			Name: fmt.Sprintf("%s/%s", horizontalPodAutoscaler.Namespace, horizontalPodAutoscaler.Name),
 			Description: model.KubernetesHorizontalPodAutoscalerDescription{
-				MetaObject:              model.ConvertObjectMeta(&horizontalPodAutoscaler.ObjectMeta),
+				MetaObject:              helpers.ConvertObjectMeta(&horizontalPodAutoscaler.ObjectMeta),
 				HorizontalPodAutoscaler: horizontalPodAutoscaler,
 			},
 		}
@@ -488,7 +495,7 @@ func KubernetesIngress(ctx context.Context, client model.Client, extra string, s
 			ID:   fmt.Sprintf("ingress/%s/%s", ingress.Namespace, ingress.Name),
 			Name: fmt.Sprintf("%s/%s", ingress.Namespace, ingress.Name),
 			Description: model.KubernetesIngressDescription{
-				MetaObject: model.ConvertObjectMeta(&ingress.ObjectMeta),
+				MetaObject: helpers.ConvertObjectMeta(&ingress.ObjectMeta),
 				Ingress:    ingress,
 			},
 		}
@@ -520,7 +527,7 @@ func KubernetesJob(ctx context.Context, client model.Client, extra string, strea
 			ID:   fmt.Sprintf("job/%s/%s", job.Namespace, job.Name),
 			Name: fmt.Sprintf("%s/%s", job.Namespace, job.Name),
 			Description: model.KubernetesJobDescription{
-				MetaObject: model.ConvertObjectMeta(&job.ObjectMeta),
+				MetaObject: helpers.ConvertObjectMeta(&job.ObjectMeta),
 				Job:        job,
 			},
 		}
@@ -552,7 +559,7 @@ func KubernetesLimitRange(ctx context.Context, client model.Client, extra string
 			ID:   fmt.Sprintf("limitrange/%s/%s", limitRange.Namespace, limitRange.Name),
 			Name: fmt.Sprintf("%s/%s", limitRange.Namespace, limitRange.Name),
 			Description: model.KubernetesLimitRangeDescription{
-				MetaObject: model.ConvertObjectMeta(&limitRange.ObjectMeta),
+				MetaObject: helpers.ConvertObjectMeta(&limitRange.ObjectMeta),
 				LimitRange: limitRange,
 			},
 		}
@@ -584,7 +591,7 @@ func KubernetesNamespace(ctx context.Context, client model.Client, extra string,
 			ID:   fmt.Sprintf("namespace/%s", namespace.Name),
 			Name: namespace.Name,
 			Description: model.KubernetesNamespaceDescription{
-				MetaObject: model.ConvertObjectMeta(&namespace.ObjectMeta),
+				MetaObject: helpers.ConvertObjectMeta(&namespace.ObjectMeta),
 				Namespace:  namespace,
 			},
 		}
@@ -616,7 +623,7 @@ func KubernetesNetworkPolicy(ctx context.Context, client model.Client, extra str
 			ID:   fmt.Sprintf("networkpolicy/%s/%s", networkPolicy.Namespace, networkPolicy.Name),
 			Name: fmt.Sprintf("%s/%s", networkPolicy.Namespace, networkPolicy.Name),
 			Description: model.KubernetesNetworkPolicyDescription{
-				MetaObject:    model.ConvertObjectMeta(&networkPolicy.ObjectMeta),
+				MetaObject:    helpers.ConvertObjectMeta(&networkPolicy.ObjectMeta),
 				NetworkPolicy: networkPolicy,
 			},
 		}
@@ -649,7 +656,7 @@ func KubernetesNode(ctx context.Context, client model.Client, extra string, stre
 			ID:   fmt.Sprintf("node/%s", node.Name),
 			Name: node.Name,
 			Description: model.KubernetesNodeDescription{
-				MetaObject: model.ConvertObjectMeta(&node.ObjectMeta),
+				MetaObject: helpers.ConvertObjectMeta(&node.ObjectMeta),
 				Node:       node,
 			},
 		}
@@ -683,7 +690,7 @@ func KubernetesPersistentVolume(ctx context.Context, client model.Client, extra 
 			ID:   fmt.Sprintf("persistentvolume/%s", pv.Name),
 			Name: pv.Name,
 			Description: model.KubernetesPersistentVolumeDescription{
-				MetaObject: model.ConvertObjectMeta(&pv.ObjectMeta),
+				MetaObject: helpers.ConvertObjectMeta(&pv.ObjectMeta),
 				PV:         pv,
 			},
 		}
@@ -716,7 +723,7 @@ func KubernetesPersistentVolumeClaim(ctx context.Context, client model.Client, e
 			ID:   fmt.Sprintf("persistentvolumeclaim/%s/%s", pvc.Namespace, pvc.Name),
 			Name: fmt.Sprintf("%s/%s", pvc.Namespace, pvc.Name),
 			Description: model.KubernetesPersistentVolumeClaimDescription{
-				MetaObject: model.ConvertObjectMeta(&pvc.ObjectMeta),
+				MetaObject: helpers.ConvertObjectMeta(&pvc.ObjectMeta),
 				PVC:        pvc,
 			},
 		}
@@ -749,7 +756,7 @@ func KubernetesPod(ctx context.Context, client model.Client, extra string, strea
 			ID:   fmt.Sprintf("pod/%s/%s", pod.Namespace, pod.Name),
 			Name: fmt.Sprintf("%s/%s", pod.Namespace, pod.Name),
 			Description: model.KubernetesPodDescription{
-				MetaObject: model.ConvertObjectMeta(&pod.ObjectMeta),
+				MetaObject: helpers.ConvertObjectMeta(&pod.ObjectMeta),
 				Pod:        pod,
 			},
 		}
@@ -782,7 +789,7 @@ func KubernetesPodDisruptionBudget(ctx context.Context, client model.Client, ext
 			ID:   fmt.Sprintf("poddisruptionbudget/%s/%s", podDisruptionBudget.Namespace, podDisruptionBudget.Name),
 			Name: fmt.Sprintf("%s/%s", podDisruptionBudget.Namespace, podDisruptionBudget.Name),
 			Description: model.KubernetesPodDisruptionBudgetDescription{
-				MetaObject:          model.ConvertObjectMeta(&podDisruptionBudget.ObjectMeta),
+				MetaObject:          helpers.ConvertObjectMeta(&podDisruptionBudget.ObjectMeta),
 				PodDisruptionBudget: podDisruptionBudget,
 			},
 		}
@@ -815,7 +822,7 @@ func KubernetesPodTemplate(ctx context.Context, client model.Client, extra strin
 			ID:   fmt.Sprintf("podtemplate/%s/%s", podTemplate.Namespace, podTemplate.Name),
 			Name: fmt.Sprintf("%s/%s", podTemplate.Namespace, podTemplate.Name),
 			Description: model.KubernetesPodTemplateDescription{
-				MetaObject:  model.ConvertObjectMeta(&podTemplate.ObjectMeta),
+				MetaObject:  helpers.ConvertObjectMeta(&podTemplate.ObjectMeta),
 				PodTemplate: podTemplate,
 			},
 		}
@@ -848,7 +855,7 @@ func KubernetesReplicaSet(ctx context.Context, client model.Client, extra string
 			ID:   fmt.Sprintf("replicaset/%s/%s", replicaSet.Namespace, replicaSet.Name),
 			Name: fmt.Sprintf("%s/%s", replicaSet.Namespace, replicaSet.Name),
 			Description: model.KubernetesReplicaSetDescription{
-				MetaObject: model.ConvertObjectMeta(&replicaSet.ObjectMeta),
+				MetaObject: helpers.ConvertObjectMeta(&replicaSet.ObjectMeta),
 				ReplicaSet: replicaSet,
 			},
 		}
@@ -881,7 +888,7 @@ func KubernetesReplicationController(ctx context.Context, client model.Client, e
 			ID:   fmt.Sprintf("replicationcontroller/%s/%s", replicationController.Namespace, replicationController.Name),
 			Name: fmt.Sprintf("%s/%s", replicationController.Namespace, replicationController.Name),
 			Description: model.KubernetesReplicationControllerDescription{
-				MetaObject:            model.ConvertObjectMeta(&replicationController.ObjectMeta),
+				MetaObject:            helpers.ConvertObjectMeta(&replicationController.ObjectMeta),
 				ReplicationController: replicationController,
 			},
 		}
@@ -914,7 +921,7 @@ func KubernetesResourceQuota(ctx context.Context, client model.Client, extra str
 			ID:   fmt.Sprintf("resourcequota/%s/%s", resourceQuota.Namespace, resourceQuota.Name),
 			Name: fmt.Sprintf("%s/%s", resourceQuota.Namespace, resourceQuota.Name),
 			Description: model.KubernetesResourceQuotaDescription{
-				MetaObject:    model.ConvertObjectMeta(&resourceQuota.ObjectMeta),
+				MetaObject:    helpers.ConvertObjectMeta(&resourceQuota.ObjectMeta),
 				ResourceQuota: resourceQuota,
 			},
 		}
@@ -947,7 +954,7 @@ func KubernetesRole(ctx context.Context, client model.Client, extra string, stre
 			ID:   fmt.Sprintf("role/%s/%s", role.Namespace, role.Name),
 			Name: fmt.Sprintf("%s/%s", role.Namespace, role.Name),
 			Description: model.KubernetesRoleDescription{
-				MetaObject: model.ConvertObjectMeta(&role.ObjectMeta),
+				MetaObject: helpers.ConvertObjectMeta(&role.ObjectMeta),
 				Role:       role,
 			},
 		}
@@ -980,7 +987,7 @@ func KubernetesRoleBinding(ctx context.Context, client model.Client, extra strin
 			ID:   fmt.Sprintf("rolebinding/%s/%s", roleBinding.Namespace, roleBinding.Name),
 			Name: fmt.Sprintf("%s/%s", roleBinding.Namespace, roleBinding.Name),
 			Description: model.KubernetesRoleBindingDescription{
-				MetaObject:  model.ConvertObjectMeta(&roleBinding.ObjectMeta),
+				MetaObject:  helpers.ConvertObjectMeta(&roleBinding.ObjectMeta),
 				RoleBinding: roleBinding,
 			},
 		}
@@ -1016,7 +1023,7 @@ func KubernetesSecret(ctx context.Context, client model.Client, extra string, st
 			ID:   fmt.Sprintf("secret/%s/%s", secret.Namespace, secret.Name),
 			Name: fmt.Sprintf("%s/%s", secret.Namespace, secret.Name),
 			Description: model.KubernetesSecretDescription{
-				MetaObject: model.ConvertObjectMeta(&secret.ObjectMeta),
+				MetaObject: helpers.ConvertObjectMeta(&secret.ObjectMeta),
 				Secret:     secret,
 			},
 		}
@@ -1049,7 +1056,7 @@ func KubernetesService(ctx context.Context, client model.Client, extra string, s
 			ID:   fmt.Sprintf("service/%s/%s", service.Namespace, service.Name),
 			Name: fmt.Sprintf("%s/%s", service.Namespace, service.Name),
 			Description: model.KubernetesServiceDescription{
-				MetaObject: model.ConvertObjectMeta(&service.ObjectMeta),
+				MetaObject: helpers.ConvertObjectMeta(&service.ObjectMeta),
 				Service:    service,
 			},
 		}
@@ -1082,7 +1089,7 @@ func KubernetesServiceAccount(ctx context.Context, client model.Client, extra st
 			ID:   fmt.Sprintf("serviceaccount/%s/%s", serviceAccount.Namespace, serviceAccount.Name),
 			Name: fmt.Sprintf("%s/%s", serviceAccount.Namespace, serviceAccount.Name),
 			Description: model.KubernetesServiceAccountDescription{
-				MetaObject:     model.ConvertObjectMeta(&serviceAccount.ObjectMeta),
+				MetaObject:     helpers.ConvertObjectMeta(&serviceAccount.ObjectMeta),
 				ServiceAccount: serviceAccount,
 			},
 		}
@@ -1115,7 +1122,7 @@ func KubernetesStatefulSet(ctx context.Context, client model.Client, extra strin
 			ID:   fmt.Sprintf("statefulset/%s/%s", statefulSet.Namespace, statefulSet.Name),
 			Name: fmt.Sprintf("%s/%s", statefulSet.Namespace, statefulSet.Name),
 			Description: model.KubernetesStatefulSetDescription{
-				MetaObject:  model.ConvertObjectMeta(&statefulSet.ObjectMeta),
+				MetaObject:  helpers.ConvertObjectMeta(&statefulSet.ObjectMeta),
 				StatefulSet: statefulSet,
 			},
 		}
@@ -1148,7 +1155,7 @@ func KubernetesStorageClass(ctx context.Context, client model.Client, extra stri
 			ID:   fmt.Sprintf("storageclass/%s", storageClass.Name),
 			Name: storageClass.Name,
 			Description: model.KubernetesStorageClassDescription{
-				MetaObject:   model.ConvertObjectMeta(&storageClass.ObjectMeta),
+				MetaObject:   helpers.ConvertObjectMeta(&storageClass.ObjectMeta),
 				StorageClass: storageClass,
 			},
 		}

@@ -3,16 +3,8 @@
 package provider
 
 import (
-	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	"github.com/opengovern/og-describer-kubernetes/discovery/provider/helpers"
 	batchv1 "k8s.io/api/batch/v1"
-	corev1 "k8s.io/api/core/v1"
-	discoveryv1 "k8s.io/api/discovery/v1"
-	networkingv1 "k8s.io/api/networking/v1"
-	policyv1 "k8s.io/api/policy/v1"
-	rbacv1 "k8s.io/api/rbac/v1"
-	storagev1 "k8s.io/api/storage/v1"
-	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
 type Metadata struct {
@@ -27,166 +19,166 @@ type KubernetesClusterDescription struct {
 }
 
 type KubernetesClusterRoleDescription struct {
-	MetaObject  ObjectMeta
-	ClusterRole ClusterRole
+	MetaObject  helpers.ObjectMeta
+	ClusterRole helpers.ClusterRole
 }
 
 type KubernetesClusterRoleBindingDescription struct {
-	MetaObject         ObjectMeta
-	ClusterRoleBinding ClusterRoleBinding
+	MetaObject         helpers.ObjectMeta
+	ClusterRoleBinding helpers.ClusterRoleBinding
 }
 
 type KubernetesConfigMapDescription struct {
-	MetaObject ObjectMeta
-	ConfigMap  corev1.ConfigMap
+	MetaObject helpers.ObjectMeta
+	ConfigMap  helpers.ConfigMap
 }
 
 type KubernetesCronJobDescription struct {
-	MetaObject ObjectMeta
-	CronJob    batchv1.CronJob
+	MetaObject helpers.ObjectMeta
+	CronJob    helpers.CronJob
 }
 
 type KubernetesCustomResourceDescription struct {
-	MetaObject         ObjectMeta
+	MetaObject         helpers.ObjectMeta
 	FullyQualifiedName string
 	CustomResource     any
 }
 
 type KubernetesCustomResourceDefinitionDescription struct {
-	MetaObject               ObjectMeta
-	CustomResourceDefinition apiextensionsv1.CustomResourceDefinition
+	MetaObject               helpers.ObjectMeta
+	CustomResourceDefinition helpers.CustomResourceDefinition
 }
 
 type KubernetesDaemonSetDescription struct {
-	MetaObject ObjectMeta
-	DaemonSet  appsv1.DaemonSet
+	MetaObject helpers.ObjectMeta
+	DaemonSet  helpers.DaemonSet
 }
 
 type KubernetesDeploymentDescription struct {
-	MetaObject ObjectMeta
-	Deployment appsv1.Deployment
+	MetaObject helpers.ObjectMeta
+	Deployment helpers.Deployment
 }
 
 type KubernetesEndpointSliceDescription struct {
-	MetaObject    ObjectMeta
-	EndpointSlice discoveryv1.EndpointSlice
+	MetaObject    helpers.ObjectMeta
+	EndpointSlice helpers.EndpointSlice
 }
 
 type KubernetesEndpointDescription struct {
-	MetaObject ObjectMeta
-	Endpoint   corev1.Endpoints
+	MetaObject helpers.ObjectMeta
+	Endpoint   helpers.Endpoints
 }
 
 type KubernetesEventDescription struct {
-	MetaObject ObjectMeta
-	Event      corev1.Event
+	MetaObject helpers.ObjectMeta
+	Event      helpers.Event
 }
 
 type KubernetesHorizontalPodAutoscalerDescription struct {
-	MetaObject              ObjectMeta
-	HorizontalPodAutoscaler autoscalingv1.HorizontalPodAutoscaler
+	MetaObject              helpers.ObjectMeta
+	HorizontalPodAutoscaler helpers.HorizontalPodAutoscaler
 }
 
 type KubernetesIngressDescription struct {
-	MetaObject ObjectMeta
-	Ingress    networkingv1.Ingress
+	MetaObject helpers.ObjectMeta
+	Ingress    helpers.Ingress
 }
 
 type KubernetesJobDescription struct {
-	MetaObject ObjectMeta
+	MetaObject helpers.ObjectMeta
 	Job        batchv1.Job
 }
 
 type KubernetesLimitRangeDescription struct {
-	MetaObject ObjectMeta
-	LimitRange corev1.LimitRange
+	MetaObject helpers.ObjectMeta
+	LimitRange helpers.LimitRange
 }
 
 type KubernetesNamespaceDescription struct {
-	MetaObject ObjectMeta
-	Namespace  corev1.Namespace
+	MetaObject helpers.ObjectMeta
+	Namespace  helpers.Namespace
 }
 
 type KubernetesNetworkPolicyDescription struct {
-	MetaObject    ObjectMeta
-	NetworkPolicy networkingv1.NetworkPolicy
+	MetaObject    helpers.ObjectMeta
+	NetworkPolicy helpers.NetworkPolicy
 }
 
 type KubernetesNodeDescription struct {
-	MetaObject ObjectMeta
-	Node       corev1.Node
+	MetaObject helpers.ObjectMeta
+	Node       helpers.Node
 }
 
 type KubernetesPersistentVolumeDescription struct {
-	MetaObject ObjectMeta
-	PV         corev1.PersistentVolume
+	MetaObject helpers.ObjectMeta
+	PV         helpers.PersistentVolume
 }
 
 type KubernetesPersistentVolumeClaimDescription struct {
-	MetaObject ObjectMeta
-	PVC        corev1.PersistentVolumeClaim
+	MetaObject helpers.ObjectMeta
+	PVC        helpers.PersistentVolumeClaim
 }
 
 type KubernetesPodDescription struct {
-	MetaObject ObjectMeta
-	Pod        corev1.Pod
+	MetaObject helpers.ObjectMeta
+	Pod        helpers.Pod
 }
 
 type KubernetesPodDisruptionBudgetDescription struct {
-	MetaObject          ObjectMeta
-	PodDisruptionBudget policyv1.PodDisruptionBudget
+	MetaObject          helpers.ObjectMeta
+	PodDisruptionBudget helpers.PodDisruptionBudget
 }
 
 type KubernetesPodTemplateDescription struct {
-	MetaObject  ObjectMeta
-	PodTemplate corev1.PodTemplate
+	MetaObject  helpers.ObjectMeta
+	PodTemplate helpers.PodTemplate
 }
 
 type KubernetesReplicaSetDescription struct {
-	MetaObject ObjectMeta
-	ReplicaSet appsv1.ReplicaSet
+	MetaObject helpers.ObjectMeta
+	ReplicaSet helpers.ReplicaSet
 }
 
 type KubernetesReplicationControllerDescription struct {
-	MetaObject            ObjectMeta
-	ReplicationController corev1.ReplicationController
+	MetaObject            helpers.ObjectMeta
+	ReplicationController helpers.ReplicationController
 }
 
 type KubernetesResourceQuotaDescription struct {
-	MetaObject    ObjectMeta
-	ResourceQuota corev1.ResourceQuota
+	MetaObject    helpers.ObjectMeta
+	ResourceQuota helpers.ResourceQuota
 }
 
 type KubernetesRoleDescription struct {
-	MetaObject ObjectMeta
-	Role       rbacv1.Role
+	MetaObject helpers.ObjectMeta
+	Role       helpers.Role
 }
 
 type KubernetesRoleBindingDescription struct {
-	MetaObject  ObjectMeta
-	RoleBinding rbacv1.RoleBinding
+	MetaObject  helpers.ObjectMeta
+	RoleBinding helpers.RoleBinding
 }
 
 type KubernetesSecretDescription struct {
-	MetaObject ObjectMeta
-	Secret     corev1.Secret
+	MetaObject helpers.ObjectMeta
+	Secret     helpers.Secret
 }
 type KubernetesServiceDescription struct {
-	MetaObject ObjectMeta
-	Service    corev1.Service
+	MetaObject helpers.ObjectMeta
+	Service    helpers.Service
 }
 
 type KubernetesServiceAccountDescription struct {
-	MetaObject     ObjectMeta
-	ServiceAccount corev1.ServiceAccount
+	MetaObject     helpers.ObjectMeta
+	ServiceAccount helpers.ServiceAccount
 }
 
 type KubernetesStatefulSetDescription struct {
-	MetaObject  ObjectMeta
-	StatefulSet appsv1.StatefulSet
+	MetaObject  helpers.ObjectMeta
+	StatefulSet helpers.StatefulSet
 }
 
 type KubernetesStorageClassDescription struct {
-	MetaObject   ObjectMeta
-	StorageClass storagev1.StorageClass
+	MetaObject   helpers.ObjectMeta
+	StorageClass helpers.StorageClass
 }

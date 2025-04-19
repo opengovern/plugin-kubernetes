@@ -1438,9 +1438,13 @@ func ConvertVolumeNodeAffinity(vna *corev1.VolumeNodeAffinity) *VolumeNodeAffini
 
 // Assumes ConvertVolumeSource exists in volume.go or needs definition
 func ConvertPersistentVolumeSource(pvs corev1.PersistentVolumeSource) VolumeSource {
+	// NOTE: Assumes Convert* functions for each volume type exist elsewhere (e.g., volume.go)
+	//       and return the corresponding helper type.
 	return VolumeSource{
+		// Restore all volume source type conversions
 		HostPath: ConvertHostPathVolumeSource(pvs.HostPath),
 		NFS:      ConvertNFSVolumeSource(pvs.NFS),
+		FC:       ConvertFCVolumeSource(pvs.FC),
 	}
 }
 

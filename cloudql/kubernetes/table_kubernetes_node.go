@@ -197,13 +197,21 @@ func transformNodeCpuAndMemoryUnit(_ context.Context, d *transform.TransformData
 
 	switch param {
 	case "Capacity.CPU":
-		return normalizeCPUToMilliCores(node.Status.Capacity.Cpu().String())
+		if v, ok := node.Status.Capacity["cpu"]; ok {
+			return v, nil
+		}
 	case "Capacity.Memory":
-		return normalizeMemoryToBytes(node.Status.Capacity.Memory().String())
+		if v, ok := node.Status.Capacity["memory"]; ok {
+			return v, nil
+		}
 	case "Allocatable.CPU":
-		return normalizeCPUToMilliCores(node.Status.Allocatable.Cpu().String())
+		if v, ok := node.Status.Allocatable["cpu"]; ok {
+			return v, nil
+		}
 	case "Allocatable.Memory":
-		return normalizeMemoryToBytes(node.Status.Allocatable.Memory().String())
+		if v, ok := node.Status.Allocatable["memory"]; ok {
+			return v, nil
+		}
 	}
 
 	return nil, nil
@@ -215,13 +223,21 @@ func transformNodeCpuAndMemory(_ context.Context, d *transform.TransformData) (a
 	node := d.HydrateItem.(opengovernance.KubernetesNode).Description.Node
 	switch param {
 	case "Capacity.CPU":
-		return node.Status.Capacity.Cpu().String(), nil
+		if v, ok := node.Status.Capacity["cpu"]; ok {
+			return v, nil
+		}
 	case "Capacity.Memory":
-		return node.Status.Capacity.Memory().String(), nil
+		if v, ok := node.Status.Capacity["memory"]; ok {
+			return v, nil
+		}
 	case "Allocatable.CPU":
-		return node.Status.Allocatable.Cpu().String(), nil
+		if v, ok := node.Status.Allocatable["cpu"]; ok {
+			return v, nil
+		}
 	case "Allocatable.Memory":
-		return node.Status.Allocatable.Memory().String(), nil
+		if v, ok := node.Status.Allocatable["memory"]; ok {
+			return v, nil
+		}
 	}
 
 	return nil, nil

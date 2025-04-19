@@ -147,6 +147,78 @@ func ConvertObjectMeta(obj *metav1.ObjectMeta) ObjectMeta {
 	}
 }
 
+type PolicyRule struct {
+	Verbs           []string
+	APIGroups       []string
+	Resources       []string
+	ResourceNames   []string
+	NonResourceURLs []string
+}
+
+func ConvertPolicyRules(policyRules []rbacv1.PolicyRule) []PolicyRule {
+	rules := make([]PolicyRule, len(policyRules))
+	for i, policyRule := range policyRules {
+		rules[i] = PolicyRule{
+			Verbs:           policyRule.Verbs,
+			APIGroups:       policyRule.APIGroups,
+			Resources:       policyRule.Resources,
+			ResourceNames:   policyRule.ResourceNames,
+			NonResourceURLs: policyRule.NonResourceURLs,
+		}
+	}
+	return rules
+}
+
+type LabelSelectorRequirement struct {
+	Key      string
+	Operator string
+	Values   []string
+}
+
+func ConvertLabelSelectorRequirements(labelSelectorRequirements []metav1.LabelSelectorRequirement) []LabelSelectorRequirement {
+	requirements := make([]LabelSelectorRequirement, len(labelSelectorRequirements))
+	for i, labelSelectorRequirement := range labelSelectorRequirements {
+		requirements[i] = LabelSelectorRequirement{
+			Key:      labelSelectorRequirement.Key,
+			Operator: string(labelSelectorRequirement.Operator),
+			Values:   labelSelectorRequirement.Values,
+		}
+	}
+	return requirements
+}
+
+type LabelSelector struct {
+	MatchLabels      map[string]string
+	MatchExpressions []LabelSelectorRequirement
+}
+
+type AggregationRule struct {
+	ClusterRoleSelectors []LabelSelector
+}
+
+func ConvertAggregationRule(aggregationRule *rbacv1.AggregationRule) *AggregationRule {
+	if aggregationRule == nil {
+		return nil
+	}
+	var clusterRoleSelectors []LabelSelector
+	for _, clusterRoleSelector := range aggregationRule.ClusterRoleSelectors {
+		clusterRoleSelectors = append(clusterRoleSelectors, LabelSelector{
+			MatchLabels:      clusterRoleSelector.MatchLabels,
+			MatchExpressions: ConvertLabelSelectorRequirements(clusterRoleSelector.MatchExpressions),
+		})
+	}
+	return &AggregationRule{
+		ClusterRoleSelectors: clusterRoleSelectors,
+	}
+}
+
+type ClusterRole struct {
+	TypeMeta
+	ObjectMeta
+	Rules           []PolicyRule
+	AggregationRule *AggregationRule
+}
+
 type Subject struct {
 	Kind      string
 	APIGroup  string

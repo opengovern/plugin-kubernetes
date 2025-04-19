@@ -82,8 +82,13 @@ func KubernetesClusterRoleBinding(ctx context.Context, client model.Client, extr
 			ID:   fmt.Sprintf("clusterrolebinding/%s", clusterRoleBinding.Name),
 			Name: clusterRoleBinding.Name,
 			Description: model.KubernetesClusterRoleBindingDescription{
-				MetaObject:         clusterRoleBinding.ObjectMeta,
-				ClusterRoleBinding: clusterRoleBinding,
+				MetaObject: model.ConvertObjectMeta(clusterRoleBinding.ObjectMeta),
+				ClusterRoleBinding: model.ClusterRoleBinding{
+					TypeMeta:   model.ConvertTypeMeta(clusterRoleBinding.TypeMeta),
+					ObjectMeta: model.ConvertObjectMeta(clusterRoleBinding.ObjectMeta),
+					Subjects:   model.ConvertSubject(clusterRoleBinding.Subjects),
+					RoleRef:    model.ConvertRoleRef(clusterRoleBinding.RoleRef),
+				},
 			},
 		}
 

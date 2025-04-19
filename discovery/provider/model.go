@@ -33,8 +33,8 @@ type KubernetesClusterRoleDescription struct {
 }
 
 type KubernetesClusterRoleBindingDescription struct {
-	MetaObject         metav1.ObjectMeta
-	ClusterRoleBinding rbacv1.ClusterRoleBinding
+	MetaObject         ObjectMeta
+	ClusterRoleBinding ClusterRoleBinding
 }
 
 type KubernetesConfigMapDescription struct {

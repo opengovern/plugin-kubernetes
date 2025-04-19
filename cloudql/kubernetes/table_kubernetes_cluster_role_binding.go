@@ -21,7 +21,7 @@ func tableKubernetesClusterRoleBinding(ctx context.Context) *plugin.Table {
 				Name:        "subjects",
 				Type:        proto.ColumnType_JSON,
 				Description: "List of references to the objects the role applies to.",
-				Transform:   transform.FromField("Description.ClusterRoleBinding.subjects"),
+				Transform:   transform.FromField("Description.ClusterRoleBinding.Subjects"),
 			},
 
 			//// RoleRef columns
@@ -29,25 +29,25 @@ func tableKubernetesClusterRoleBinding(ctx context.Context) *plugin.Table {
 				Name:        "role_name",
 				Type:        proto.ColumnType_STRING,
 				Description: "Name of the cluster role for which access is granted to subjects.",
-				Transform:   transform.FromField("Description.ClusterRoleBinding.roleRef.name"),
+				Transform:   transform.FromField("Description.ClusterRoleBinding.RoleRef.Name"),
 			},
 			{
 				Name:        "role_api_group",
 				Type:        proto.ColumnType_STRING,
 				Description: "The group for the referenced role.",
-				Transform:   transform.FromField("Description.ClusterRoleBinding.roleRef.apiGroup"),
+				Transform:   transform.FromField("Description.ClusterRoleBinding.RoleRef.APIGroup"),
 			},
 			{
 				Name:        "role_kind",
 				Type:        proto.ColumnType_STRING,
 				Description: "Type of the role refrenced must be one of ClusterRole or Role.",
-				Transform:   transform.FromField("Description.ClusterRoleBinding.roleRef.kind"),
+				Transform:   transform.FromField("Description.ClusterRoleBinding.RoleRef.Kind"),
 			},
 			{
 				Name:        "title",
 				Type:        proto.ColumnType_STRING,
 				Description: ColumnDescriptionTitle,
-				Transform:   transform.FromField("Description.ClusterRoleBinding.metadata.Name"),
+				Transform:   transform.FromField("Description.ClusterRoleBinding.Metadata.Name"),
 			},
 			{
 				Name:        "tags",

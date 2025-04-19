@@ -513,11 +513,11 @@ func (p KubernetesClusterRoleBindingPaginator) NextPage(ctx context.Context) ([]
 }
 
 var listKubernetesClusterRoleBindingFilters = map[string]string{
-	"role_api_group": "Description.ClusterRoleBinding.roleRef.apiGroup",
-	"role_kind":      "Description.ClusterRoleBinding.roleRef.kind",
-	"role_name":      "Description.ClusterRoleBinding.roleRef.name",
-	"subjects":       "Description.ClusterRoleBinding.subjects",
-	"title":          "Description.ClusterRoleBinding.metadata.Name",
+	"role_api_group": "Description.ClusterRoleBinding.RoleRef.APIGroup",
+	"role_kind":      "Description.ClusterRoleBinding.RoleRef.Kind",
+	"role_name":      "Description.ClusterRoleBinding.RoleRef.Name",
+	"subjects":       "Description.ClusterRoleBinding.Subjects",
+	"title":          "Description.ClusterRoleBinding.Metadata.Name",
 }
 
 func ListKubernetesClusterRoleBinding(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -581,11 +581,11 @@ func ListKubernetesClusterRoleBinding(ctx context.Context, d *plugin.QueryData, 
 }
 
 var getKubernetesClusterRoleBindingFilters = map[string]string{
-	"role_api_group": "Description.ClusterRoleBinding.roleRef.apiGroup",
-	"role_kind":      "Description.ClusterRoleBinding.roleRef.kind",
-	"role_name":      "Description.ClusterRoleBinding.roleRef.name",
-	"subjects":       "Description.ClusterRoleBinding.subjects",
-	"title":          "Description.ClusterRoleBinding.metadata.Name",
+	"role_api_group": "Description.ClusterRoleBinding.RoleRef.APIGroup",
+	"role_kind":      "Description.ClusterRoleBinding.RoleRef.Kind",
+	"role_name":      "Description.ClusterRoleBinding.RoleRef.Name",
+	"subjects":       "Description.ClusterRoleBinding.Subjects",
+	"title":          "Description.ClusterRoleBinding.Metadata.Name",
 }
 
 func GetKubernetesClusterRoleBinding(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {

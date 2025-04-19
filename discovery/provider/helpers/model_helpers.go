@@ -1245,6 +1245,19 @@ type IngressServiceBackend struct {
 	Port ServiceBackendPort
 }
 
+func ConvertIngressServiceBackend(sb *networkingv1.IngressServiceBackend) *IngressServiceBackend {
+	if sb == nil {
+		return nil
+	}
+	return &IngressServiceBackend{
+		Name: sb.Name,
+		Port: ServiceBackendPort{
+			Name:   sb.Port.Name,
+			Number: sb.Port.Number,
+		},
+	}
+}
+
 type ServiceBackendPort struct {
 	Name   string
 	Number int32
@@ -1264,14 +1277,46 @@ type IngressRuleValue struct {
 	HTTP *HTTPIngressRuleValue
 }
 
+func ConvertIngressRuleValue(rv networkingv1.IngressRuleValue) IngressRuleValue {
+	return IngressRuleValue{
+		HTTP: ConvertHTTPIngressRuleValue(rv.HTTP),
+	}
+}
+
 type HTTPIngressRuleValue struct {
 	Paths []HTTPIngressPath
 }
 
+func ConvertHTTPIngressRuleValue(rv *networkingv1.HTTPIngressRuleValue) *HTTPIngressRuleValue {
+	if rv == nil {
+		return nil
+	}
+	paths := make([]HTTPIngressPath, len(rv.Paths))
+	for i, path := range rv.Paths {
+		paths[i] = ConvertHTTPIngressPath(path)
+	}
+	return &HTTPIngressRuleValue{
+		Paths: paths,
+	}
+}
+
 type HTTPIngressPath struct {
 	Path     string
-	PathType string // networkingv1.PathType
+	PathType *string // networkingv1.PathType
 	Backend  IngressBackend
+}
+
+func ConvertHTTPIngressPath(p networkingv1.HTTPIngressPath) HTTPIngressPath {
+	var pathType *string
+	if p.PathType != nil {
+		pathTypeTmp := string(*p.PathType)
+		pathType = &pathTypeTmp
+	}
+	return HTTPIngressPath{
+		Path:     p.Path,
+		PathType: pathType,
+		Backend:  *ConvertIngressBackend(&p.Backend),
+	}
 }
 
 type IngressStatus struct {
@@ -1393,34 +1438,9 @@ func ConvertVolumeNodeAffinity(vna *corev1.VolumeNodeAffinity) *VolumeNodeAffini
 
 // Assumes ConvertVolumeSource exists in volume.go or needs definition
 func ConvertPersistentVolumeSource(pvs corev1.PersistentVolumeSource) VolumeSource {
-	// NOTE: This function assumes Convert* functions for each volume type
-	//       (e.g., ConvertGCEPersistentDiskVolumeSource, ConvertAWSElasticBlockStoreVolumeSource)
-	//       are defined elsewhere (likely volume.go) and return the corresponding
-	//       helper type (e.g., helpers.GCEPersistentDiskVolumeSource).
-	//       If these converters or helper types don't exist, they need to be created.
 	return VolumeSource{
-		// Map each field from corev1.PersistentVolumeSource to the helpers.VolumeSource equivalent
-		GCEPersistentDisk:    ConvertGCEPersistentDiskVolumeSource(pvs.GCEPersistentDisk),
-		AWSElasticBlockStore: ConvertAWSElasticBlockStoreVolumeSource(pvs.AWSElasticBlockStore),
-		HostPath:             ConvertHostPathVolumeSource(pvs.HostPath),
-		Glusterfs:            ConvertGlusterfsPersistentVolumeSource(pvs.Glusterfs),
-		NFS:                  ConvertNFSVolumeSource(pvs.NFS),
-		RBD:                  ConvertRBDPersistentVolumeSource(pvs.RBD),
-		ISCSI:                ConvertISCSIPersistentVolumeSource(pvs.ISCSI),
-		FC:                   ConvertFCVolumeSource(pvs.FC),
-		Flocker:              ConvertFlockerVolumeSource(pvs.Flocker),
-		FlexVolume:           ConvertFlexPersistentVolumeSource(pvs.FlexVolume),
-		AzureFile:            ConvertAzureFilePersistentVolumeSource(pvs.AzureFile),
-		VsphereVolume:        ConvertVsphereVirtualDiskVolumeSource(pvs.VsphereVolume),
-		Quobyte:              ConvertQuobyteVolumeSource(pvs.Quobyte),
-		AzureDisk:            ConvertAzureDiskVolumeSource(pvs.AzureDisk),
-		PhotonPersistentDisk: ConvertPhotonPersistentDiskVolumeSource(pvs.PhotonPersistentDisk),
-		PortworxVolume:       ConvertPortworxVolumeSource(pvs.PortworxVolume),
-		ScaleIO:              ConvertScaleIOPersistentVolumeSource(pvs.ScaleIO),
-		Local:                ConvertLocalVolumeSource(pvs.Local),
-		StorageOS:            ConvertStorageOSPersistentVolumeSource(pvs.StorageOS),
-		// Correctly call the converter for the CSI field (assuming it exists and handles *corev1.CSIPersistentVolumeSource)
-		CSI: ConvertCSIPersistentVolumeSource(pvs.CSI),
+		HostPath: ConvertHostPathVolumeSource(pvs.HostPath),
+		NFS:      ConvertNFSVolumeSource(pvs.NFS),
 	}
 }
 
@@ -2132,41 +2152,6 @@ func ConvertVolumeBindingMode(vbm *storagev1.VolumeBindingMode) *string {
 	return &s
 }
 
-func ConvertTopologySelectorLabelRequirement(r storagev1.TopologySelectorLabelRequirement) TopologySelectorLabelRequirement {
-	return TopologySelectorLabelRequirement{
-		Key:    r.Key,
-		Values: r.Values,
-	}
-}
-
-func ConvertTopologySelectorLabelRequirements(rs []storagev1.TopologySelectorLabelRequirement) []TopologySelectorLabelRequirement {
-	if rs == nil {
-		return nil
-	}
-	res := make([]TopologySelectorLabelRequirement, len(rs))
-	for i, r := range rs {
-		res[i] = ConvertTopologySelectorLabelRequirement(r)
-	}
-	return res
-}
-
-func ConvertTopologySelectorTerm(t storagev1.TopologySelectorTerm) TopologySelectorTerm {
-	return TopologySelectorTerm{
-		MatchLabelExpressions: ConvertTopologySelectorLabelRequirements(t.MatchLabelExpressions),
-	}
-}
-
-func ConvertTopologySelectorTerms(ts []storagev1.TopologySelectorTerm) []TopologySelectorTerm {
-	if ts == nil {
-		return nil
-	}
-	res := make([]TopologySelectorTerm, len(ts))
-	for i, t := range ts {
-		res[i] = ConvertTopologySelectorTerm(t)
-	}
-	return res
-}
-
 func ConvertStorageClass(sc *storagev1.StorageClass) StorageClass {
 	// Need to handle *corev1.PersistentVolumeReclaimPolicy
 	var reclaimPolicyPtr *string
@@ -2184,7 +2169,6 @@ func ConvertStorageClass(sc *storagev1.StorageClass) StorageClass {
 		MountOptions:         sc.MountOptions,
 		AllowVolumeExpansion: sc.AllowVolumeExpansion,
 		VolumeBindingMode:    ConvertVolumeBindingMode(sc.VolumeBindingMode),
-		AllowedTopologies:    ConvertTopologySelectorTerms(sc.AllowedTopologies),
 	}
 }
 
@@ -2353,8 +2337,7 @@ func ConvertEvent(ev *corev1.Event) Event {
 type NetworkPolicy struct {
 	TypeMeta
 	ObjectMeta
-	Spec   NetworkPolicySpec
-	Status NetworkPolicyStatus // Added later
+	Spec NetworkPolicySpec
 }
 
 type NetworkPolicySpec struct {
@@ -2511,18 +2494,11 @@ func ConvertNetworkPolicySpec(spec networkingv1.NetworkPolicySpec) NetworkPolicy
 	}
 }
 
-func ConvertNetworkPolicyStatus(status networkingv1.NetworkPolicyStatus) NetworkPolicyStatus {
-	return NetworkPolicyStatus{
-		Conditions: status.Conditions, // Use metav1.Condition directly
-	}
-}
-
 func ConvertNetworkPolicy(np *networkingv1.NetworkPolicy) NetworkPolicy {
 	return NetworkPolicy{
 		TypeMeta:   ConvertTypeMeta(np.TypeMeta),
 		ObjectMeta: ConvertObjectMeta(&np.ObjectMeta),
 		Spec:       ConvertNetworkPolicySpec(np.Spec),
-		Status:     ConvertNetworkPolicyStatus(np.Status),
 	}
 }
 
@@ -2949,4 +2925,59 @@ func ConvertPersistentVolumeClaim(pvc *corev1.PersistentVolumeClaim) PersistentV
 // Added IngressLoadBalancerStatus helper type
 type IngressLoadBalancerStatus struct {
 	Ingress []LoadBalancerIngress // Use helpers.LoadBalancerIngress
+}
+
+// ConvertIngressBackend converts *networkingv1.IngressBackend to *IngressBackend
+// Assumes IngressBackend, ConvertIngressServiceBackend and ConvertTypedLocalObjectReference exist.
+func ConvertIngressBackend(ib *networkingv1.IngressBackend) *IngressBackend {
+	if ib == nil {
+		return nil
+	}
+	return &IngressBackend{
+		Service:  ConvertIngressServiceBackend(ib.Service),
+		Resource: ConvertTypedLocalObjectReference(ib.Resource),
+	}
+}
+
+// ConvertIngressTLS converts networkingv1.IngressTLS to IngressTLS
+// Assumes IngressTLS helper type exists
+func ConvertIngressTLS(itls networkingv1.IngressTLS) IngressTLS {
+	return IngressTLS{
+		Hosts:      itls.Hosts,
+		SecretName: itls.SecretName,
+	}
+}
+
+// ConvertIngressTLSs converts []networkingv1.IngressTLS to []IngressTLS
+// Assumes IngressTLS helper type and ConvertIngressTLS exist.
+func ConvertIngressTLSs(itls []networkingv1.IngressTLS) []IngressTLS {
+	if itls == nil {
+		return nil
+	}
+	res := make([]IngressTLS, len(itls))
+	for i, tls := range itls {
+		res[i] = ConvertIngressTLS(tls) // Assumes ConvertIngressTLS exists
+	}
+	return res
+}
+
+// ConvertIngressRule converts networkingv1.IngressRule to IngressRule
+func ConvertIngressRule(ir networkingv1.IngressRule) IngressRule {
+	return IngressRule{
+		Host:             ir.Host,
+		IngressRuleValue: ConvertIngressRuleValue(ir.IngressRuleValue),
+	}
+}
+
+// ConvertIngressRules converts []networkingv1.IngressRule to []IngressRule
+// Assumes IngressRule helper type and ConvertIngressRule exist.
+func ConvertIngressRules(irs []networkingv1.IngressRule) []IngressRule {
+	if irs == nil {
+		return nil
+	}
+	res := make([]IngressRule, len(irs))
+	for i, r := range irs {
+		res[i] = ConvertIngressRule(r) // Assumes ConvertIngressRule exists
+	}
+	return res
 }

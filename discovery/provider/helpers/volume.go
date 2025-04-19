@@ -653,29 +653,15 @@ func ConvertImageVolumeSource(s *corev1.ImageVolumeSource) *ImageVolumeSource {
 type VolumeSource struct {
 	HostPath              *HostPathVolumeSource
 	EmptyDir              *EmptyDirVolumeSource
-	GCEPersistentDisk     *GCEPersistentDiskVolumeSource
-	AWSElasticBlockStore  *AWSElasticBlockStoreVolumeSource
 	GitRepo               *GitRepoVolumeSource
 	Secret                *SecretVolumeSource
 	NFS                   *NFSVolumeSource
 	ISCSI                 *ISCSIVolumeSource
-	Glusterfs             *GlusterfsVolumeSource
 	PersistentVolumeClaim *PersistentVolumeClaimVolumeSource
-	RBD                   *RBDVolumeSource
-	FlexVolume            *FlexVolumeSource
-	Flocker               *FlockerVolumeSource
 	DownwardAPI           *DownwardAPIVolumeSource
 	FC                    *FCVolumeSource
-	AzureFile             *AzureFileVolumeSource
 	ConfigMap             *ConfigMapVolumeSource
-	VsphereVolume         *VsphereVirtualDiskVolumeSource
-	Quobyte               *QuobyteVolumeSource
-	AzureDisk             *AzureDiskVolumeSource
-	PhotonPersistentDisk  *PhotonPersistentDiskVolumeSource
 	Projected             *ProjectedVolumeSource
-	PortworxVolume        *PortworxVolumeSource
-	ScaleIO               *ScaleIOVolumeSource
-	StorageOS             *StorageOSVolumeSource
 	CSI                   *CSIVolumeSource
 	Ephemeral             *EphemeralVolumeSource
 	Image                 *ImageVolumeSource
@@ -1057,29 +1043,15 @@ func ConvertVolume(vol corev1.Volume) Volume {
 		VolumeSource: VolumeSource{
 			HostPath:              ConvertHostPathVolumeSource(vol.HostPath),
 			EmptyDir:              ConvertEmptyDirVolumeSource(vol.EmptyDir),
-			GCEPersistentDisk:     ConvertGCEPersistentDiskVolumeSource(vol.GCEPersistentDisk),
-			AWSElasticBlockStore:  ConvertAWSElasticBlockStoreVolumeSource(vol.AWSElasticBlockStore),
 			GitRepo:               ConvertGitRepoVolumeSource(vol.GitRepo),
 			Secret:                ConvertSecretVolumeSource(vol.Secret),
 			NFS:                   ConvertNFSVolumeSource(vol.NFS),
 			ISCSI:                 ConvertISCSIVolumeSource(vol.ISCSI),
-			Glusterfs:             ConvertGlusterfsVolumeSource(vol.Glusterfs),
 			PersistentVolumeClaim: ConvertPersistentVolumeClaimVolumeSource(vol.PersistentVolumeClaim),
-			RBD:                   ConvertRBDVolumeSource(vol.RBD),
-			FlexVolume:            ConvertFlexVolumeSource(vol.FlexVolume),
-			Flocker:               ConvertFlockerVolumeSource(vol.Flocker),
 			DownwardAPI:           ConvertDownwardAPIVolumeSource(vol.DownwardAPI),
 			FC:                    ConvertFCVolumeSource(vol.FC),
-			AzureFile:             ConvertAzureFileVolumeSource(vol.AzureFile),
 			ConfigMap:             ConvertConfigMapVolumeSource(vol.ConfigMap),
-			VsphereVolume:         ConvertVsphereVirtualDiskVolumeSource(vol.VsphereVolume),
-			Quobyte:               ConvertQuobyteVolumeSource(vol.Quobyte),
-			AzureDisk:             ConvertAzureDiskVolumeSource(vol.AzureDisk),
-			PhotonPersistentDisk:  ConvertPhotonPersistentDiskVolumeSource(vol.PhotonPersistentDisk),
 			Projected:             ConvertProjectedVolumeSource(vol.Projected),
-			PortworxVolume:        ConvertPortworxVolumeSource(vol.PortworxVolume),
-			ScaleIO:               ConvertScaleIOVolumeSource(vol.ScaleIO),
-			StorageOS:             ConvertStorageOSVolumeSource(vol.StorageOS),
 			CSI:                   ConvertCSIVolumeSource(vol.CSI),
 			Ephemeral:             ConvertEphemeralVolumeSource(vol.Ephemeral),
 			Image:                 ConvertImageVolumeSource(vol.Image),

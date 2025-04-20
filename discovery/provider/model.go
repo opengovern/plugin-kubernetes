@@ -11,11 +11,11 @@ type Metadata struct {
 }
 
 type KubernetesClusterDescription struct {
-	AuthMethod            string `json:"auth_method"`
-	ContextName           string `json:"context_name"`
-	Endpoint              string `json:"endpoint"`
-	TLSServerVerification bool   `json:"tls_server_verification"`
-	ServerVersion         string `json:"server_version"`
+	AuthMethod            string
+	ContextName           string
+	Endpoint              string
+	TLSServerVerification bool
+	ServerVersion         string
 }
 
 type KubernetesClusterRoleDescription struct {

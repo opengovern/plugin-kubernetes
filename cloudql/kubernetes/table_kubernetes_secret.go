@@ -28,6 +28,18 @@ func tableKubernetesSecret(ctx context.Context) *plugin.Table {
 				Description: "Type of the secret data.",
 				Transform:   transform.FromField("Description.Secret.Type"),
 			},
+			{
+				Name:        "data",
+				Type:        proto.ColumnType_JSON,
+				Description: "Type of the secret data.",
+				Transform:   transform.FromField("Description.Secret.Data"),
+			},
+			{
+				Name:        "string_data",
+				Type:        proto.ColumnType_JSON,
+				Description: "Type of the secret data.",
+				Transform:   transform.FromField("Description.Secret.StringData"),
+			},
 
 			//// Steampipe Standard Columns
 			{

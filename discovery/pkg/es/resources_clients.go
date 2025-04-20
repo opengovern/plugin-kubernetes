@@ -724,6 +724,7 @@ func (p KubernetesConfigMapPaginator) NextPage(ctx context.Context) ([]Kubernete
 }
 
 var listKubernetesConfigMapFilters = map[string]string{
+	"data":      "Description.ConfigMap.Data",
 	"immutable": "Description.ConfigMap.Immutable",
 	"title":     "Description.ConfigMap.Name",
 }
@@ -789,6 +790,7 @@ func ListKubernetesConfigMap(ctx context.Context, d *plugin.QueryData, _ *plugin
 }
 
 var getKubernetesConfigMapFilters = map[string]string{
+	"data":      "Description.ConfigMap.Data",
 	"immutable": "Description.ConfigMap.Immutable",
 	"title":     "Description.ConfigMap.Name",
 }
@@ -6434,9 +6436,11 @@ func (p KubernetesSecretPaginator) NextPage(ctx context.Context) ([]KubernetesSe
 }
 
 var listKubernetesSecretFilters = map[string]string{
-	"immutable": "Description.Secret.Immutable",
-	"title":     "Description.Secret.Name",
-	"type":      "Description.Secret.Type",
+	"data":        "Description.Secret.Data",
+	"immutable":   "Description.Secret.Immutable",
+	"string_data": "Description.Secret.StringData",
+	"title":       "Description.Secret.Name",
+	"type":        "Description.Secret.Type",
 }
 
 func ListKubernetesSecret(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -6500,9 +6504,11 @@ func ListKubernetesSecret(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 }
 
 var getKubernetesSecretFilters = map[string]string{
-	"immutable": "Description.Secret.Immutable",
-	"title":     "Description.Secret.Name",
-	"type":      "Description.Secret.Type",
+	"data":        "Description.Secret.Data",
+	"immutable":   "Description.Secret.Immutable",
+	"string_data": "Description.Secret.StringData",
+	"title":       "Description.Secret.Name",
+	"type":        "Description.Secret.Type",
 }
 
 func GetKubernetesSecret(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {

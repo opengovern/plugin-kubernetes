@@ -10,7 +10,6 @@ type ConfigMap struct {
 	ObjectMeta // Assumes ObjectMeta in model_helpers.go
 	Immutable  *bool
 	Data       map[string]string
-	BinaryData map[string][]byte
 }
 
 // ConvertConfigMap creates a helper ConfigMap from a corev1 ConfigMap
@@ -20,6 +19,5 @@ func ConvertConfigMap(cm *corev1.ConfigMap) ConfigMap {
 		ObjectMeta: ConvertObjectMeta(&cm.ObjectMeta), // Assumes ConvertObjectMeta in model_helpers.go
 		Immutable:  cm.Immutable,
 		Data:       cm.Data,
-		BinaryData: cm.BinaryData,
 	}
 }

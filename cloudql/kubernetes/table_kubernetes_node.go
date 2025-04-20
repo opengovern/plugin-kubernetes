@@ -198,19 +198,31 @@ func transformNodeCpuAndMemoryUnit(_ context.Context, d *transform.TransformData
 	switch param {
 	case "Capacity.CPU":
 		if v, ok := node.Status.Capacity["cpu"]; ok {
-			return v, nil
+			if vv, k := v.AsInt64(); k {
+				return vv, nil
+			}
+			return nil, nil
 		}
 	case "Capacity.Memory":
 		if v, ok := node.Status.Capacity["memory"]; ok {
-			return v, nil
+			if vv, k := v.AsInt64(); k {
+				return vv, nil
+			}
+			return nil, nil
 		}
 	case "Allocatable.CPU":
 		if v, ok := node.Status.Allocatable["cpu"]; ok {
-			return v, nil
+			if vv, k := v.AsInt64(); k {
+				return vv, nil
+			}
+			return nil, nil
 		}
 	case "Allocatable.Memory":
 		if v, ok := node.Status.Allocatable["memory"]; ok {
-			return v, nil
+			if vv, k := v.AsInt64(); k {
+				return vv, nil
+			}
+			return nil, nil
 		}
 	}
 
@@ -224,19 +236,19 @@ func transformNodeCpuAndMemory(_ context.Context, d *transform.TransformData) (a
 	switch param {
 	case "Capacity.CPU":
 		if v, ok := node.Status.Capacity["cpu"]; ok {
-			return v, nil
+			return v.String(), nil
 		}
 	case "Capacity.Memory":
 		if v, ok := node.Status.Capacity["memory"]; ok {
-			return v, nil
+			return v.String(), nil
 		}
 	case "Allocatable.CPU":
 		if v, ok := node.Status.Allocatable["cpu"]; ok {
-			return v, nil
+			return v.String(), nil
 		}
 	case "Allocatable.Memory":
 		if v, ok := node.Status.Allocatable["memory"]; ok {
-			return v, nil
+			return v.String(), nil
 		}
 	}
 

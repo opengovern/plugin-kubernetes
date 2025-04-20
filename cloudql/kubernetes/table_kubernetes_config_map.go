@@ -23,6 +23,12 @@ func tableKubernetesConfigMap(ctx context.Context) *plugin.Table {
 				Description: "If set to true, ensures that data stored in the ConfigMap cannot be updated (only object metadata can be modified). If not set to true, the field can be modified at any time. Defaulted to nil.",
 				Transform:   transform.FromField("Description.ConfigMap.Immutable"),
 			},
+			{
+				Name:        "data",
+				Type:        proto.ColumnType_JSON,
+				Description: "configmap data",
+				Transform:   transform.FromField("Description.ConfigMap.Data"),
+			},
 			//// Steampipe Standard Columns
 			{
 				Name:        "title",

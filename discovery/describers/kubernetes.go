@@ -121,11 +121,7 @@ func KubernetesConfigMap(ctx context.Context, client model.Client, extra string,
 	for _, configMap := range configMaps.Items {
 		var resource models.Resource
 
-		// Do not include the data in the configmap
-		configMap.Data = nil
 		configMap.BinaryData = nil
-		// We don't need to include the managed fields in the description, also it causes issues in elastic search mapping generation
-		configMap.ManagedFields = nil
 		resource = models.Resource{
 			ID:   fmt.Sprintf("configmap/%s/%s", configMap.Namespace, configMap.Name),
 			Name: fmt.Sprintf("%s/%s", configMap.Namespace, configMap.Name),
@@ -136,7 +132,6 @@ func KubernetesConfigMap(ctx context.Context, client model.Client, extra string,
 					ObjectMeta: helpers.ConvertObjectMeta(&configMap.ObjectMeta),
 					Immutable:  configMap.Immutable,
 					Data:       configMap.Data,
-					BinaryData: configMap.BinaryData,
 				},
 			},
 		}
@@ -1038,11 +1033,6 @@ func KubernetesSecret(ctx context.Context, client model.Client, extra string, st
 
 	for _, secret := range secrets.Items {
 		var resource models.Resource
-		// Do not include the data in the secret
-		secret.Data = nil
-		secret.StringData = nil
-		// We don't need to include the managed fields in the description, also it causes issues in elastic search mapping generation
-		secret.ManagedFields = nil
 		resource = models.Resource{
 			ID:   fmt.Sprintf("secret/%s/%s", secret.Namespace, secret.Name),
 			Name: fmt.Sprintf("%s/%s", secret.Namespace, secret.Name),

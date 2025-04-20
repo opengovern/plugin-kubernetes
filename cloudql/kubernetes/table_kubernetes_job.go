@@ -13,7 +13,7 @@ func tableKubernetesJob(ctx context.Context) *plugin.Table {
 		Name:        "k8_job",
 		Description: "A Job creates one or more Pods and will continue to retry execution of the Pods until a specified number of them successfully terminate.",
 		List: &plugin.ListConfig{
-			Hydrate: opengovernance.ListKubernetesIngress,
+			Hydrate: opengovernance.ListKubernetesJob,
 		},
 		Columns: commonColumns([]*plugin.Column{
 			{

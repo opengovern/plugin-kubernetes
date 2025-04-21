@@ -963,22 +963,89 @@ type PersistentVolumeClaimSpec struct {
 
 // Need PersistentVolumeClaimStatus definition
 type PersistentVolumeClaimStatus struct {
-	Phase                     string                       // corev1.PersistentVolumeClaimPhase
-	AccessModes               []string                     // corev1.PersistentVolumeAccessMode
-	Capacity                  map[string]resource.Quantity // corev1.ResourceList
-	Conditions                []PersistentVolumeClaimCondition
-	AllocatedResources        map[string]resource.Quantity // corev1.ResourceList
-	ResizeStatus              *string                      // corev1.PersistentVolumeClaimResizeStatus
-	AllocatedResourceStatuses map[string]string            // corev1.ClaimResourceStatus - New in 1.27?
+	Phase                            string                       // corev1.PersistentVolumeClaimPhase
+	AccessModes                      []string                     // corev1.PersistentVolumeAccessMode
+	Capacity                         map[string]resource.Quantity // corev1.ResourceList
+	Conditions                       []PersistentVolumeClaimCondition
+	AllocatedResources               map[string]resource.Quantity // corev1.ResourceList
+	AllocatedResourceStatuses        map[string]string            // corev1.ClaimResourceStatus - New in 1.27?
+	CurrentVolumeAttributesClassName *string
+	ModifyVolumeStatus               *struct {
+		TargetVolumeAttributesClassName string
+		Status                          string
+	}
+}
+
+func ConvertPersistentVolumeClaimStatus(status corev1.PersistentVolumeClaimStatus) PersistentVolumeClaimStatus {
+	var accessModes []string
+	if status.AccessModes != nil {
+		accessModes = make([]string, len(status.AccessModes))
+		for i, a := range status.AccessModes {
+			accessModes[i] = string(a)
+		}
+	}
+	capacity := make(map[string]resource.Quantity)
+	if status.Capacity != nil {
+		for k, v := range status.Capacity {
+			capacity[string(k)] = v
+		}
+	}
+	var conditions []PersistentVolumeClaimCondition
+	if status.Conditions != nil {
+		conditions = make([]PersistentVolumeClaimCondition, len(status.Conditions))
+		for i, c := range status.Conditions {
+			conditions[i] = ConvertPersistentVolumeClaimCondition(c)
+		}
+	}
+	allocatedResources := make(map[string]resource.Quantity)
+	if status.AllocatedResources != nil {
+		for k, v := range status.AllocatedResources {
+			allocatedResources[string(k)] = v
+		}
+	}
+	allocatedResourceStatus := make(map[string]string)
+	if status.AllocatedResourceStatuses != nil {
+		allocatedResourceStatus = make(map[string]string)
+		for k, v := range status.AllocatedResourceStatuses {
+			allocatedResourceStatus[string(k)] = string(v)
+		}
+	}
+	return PersistentVolumeClaimStatus{
+		Phase:                            string(status.Phase),
+		AccessModes:                      accessModes,
+		Capacity:                         capacity,
+		Conditions:                       conditions,
+		AllocatedResources:               allocatedResources,
+		AllocatedResourceStatuses:        allocatedResourceStatus,
+		CurrentVolumeAttributesClassName: status.CurrentVolumeAttributesClassName,
+		ModifyVolumeStatus: &struct {
+			TargetVolumeAttributesClassName string
+			Status                          string
+		}{
+			TargetVolumeAttributesClassName: status.ModifyVolumeStatus.TargetVolumeAttributesClassName,
+			Status:                          string(status.ModifyVolumeStatus.Status),
+		},
+	}
 }
 
 type PersistentVolumeClaimCondition struct {
 	Type               string // corev1.PersistentVolumeClaimConditionType
 	Status             string // corev1.ConditionStatus
-	LastProbeTime      *time.Time
-	LastTransitionTime *time.Time
+	LastProbeTime      time.Time
+	LastTransitionTime time.Time
 	Reason             string
 	Message            string
+}
+
+func ConvertPersistentVolumeClaimCondition(condition corev1.PersistentVolumeClaimCondition) PersistentVolumeClaimCondition {
+	return PersistentVolumeClaimCondition{
+		Type:               string(condition.Type),
+		Status:             string(condition.Status),
+		LastProbeTime:      ConvertTime(condition.LastProbeTime),
+		LastTransitionTime: ConvertTime(condition.LastTransitionTime),
+		Reason:             condition.Reason,
+		Message:            condition.Message,
+	}
 }
 
 // Add necessary conversion functions for PVC Status
@@ -2920,9 +2987,8 @@ func ConvertPersistentVolumeClaim(pvc *corev1.PersistentVolumeClaim) PersistentV
 	return PersistentVolumeClaim{
 		TypeMeta:   ConvertTypeMeta(pvc.TypeMeta),
 		ObjectMeta: ConvertObjectMeta(&pvc.ObjectMeta),
-		// Note: These will cause 'undefined' errors if not defined elsewhere
-		// Spec:       ConvertPersistentVolumeClaimSpec(&pvc.Spec),
-		// Status:     ConvertPersistentVolumeClaimStatus(&pvc.Status),
+		Spec:       ConvertPersistentVolumeClaimSpec(pvc.Spec),
+		Status:     ConvertPersistentVolumeClaimStatus(pvc.Status),
 	}
 }
 

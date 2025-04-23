@@ -57,7 +57,7 @@ func NewTaskRunner(ctx context.Context, jq *jq.JobQueue, coreServiceEndpoint str
 type TaskResult struct {
 	AllIntegrations             []string                      `json:"all_integrations"`
 	AllIntegrationsCount        int                           `json:"all_integrations_count"`
-	ProgressedIntegrations      map[string]*IntegrationResult `json:"proposed_integrations"`
+	ProgressedIntegrations      map[string]*IntegrationResult `json:"progressed_integrations"`
 	ProgressedIntegrationsCount int                           `json:"proposed_integrations_count"`
 }
 
@@ -105,7 +105,6 @@ func (tr *TaskRunner) RunTask(ctx context.Context) error {
 		}
 	}
 
-	taskResult.AllIntegrations = make([]string, len(integrations))
 	for _, i := range integrations {
 		taskResult.AllIntegrations = append(taskResult.AllIntegrations, i.IntegrationID)
 	}
@@ -155,12 +154,10 @@ func (tr *TaskRunner) describeIntegrationResourceTypes(ctx context.Context, i In
 		}
 	}
 
-	taskResult.ProgressedIntegrations[i.IntegrationID].AllResourceTypes = make([]string, len(resourceTypes))
 	for _, rt := range resourceTypes {
 		taskResult.ProgressedIntegrations[i.IntegrationID].AllResourceTypes = append(taskResult.ProgressedIntegrations[i.IntegrationID].AllResourceTypes, rt.Name)
 	}
 	taskResult.ProgressedIntegrations[i.IntegrationID].AllResourceTypesCount = len(resourceTypes)
-	taskResult.ProgressedIntegrations[i.IntegrationID].ResourceTypeResults = make([]ResourceTypeResult, len(resourceTypes))
 
 	for _, rt := range resourceTypes {
 		params := make(map[string]string)

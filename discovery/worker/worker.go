@@ -184,11 +184,11 @@ func (w *Worker) ProcessMessage(ctx context.Context, msg jetstream.Msg) (err err
 		produceCtx, produceCancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer produceCancel()
 
-		msgId := fmt.Sprintf("task-run-result-%d", runID)
+		msgId := fmt.Sprintf("task-run-result-%d-final", runID)
 		if _, pubErr := w.jq.Produce(produceCtx, envs.ResultTopicName, responseJson, msgId); pubErr != nil {
 			msgLogger.Error("failed to publish final job result", zap.String("jobResult", string(responseJson)), zap.Error(pubErr))
 		} else {
-			msgLogger.Info("Published final job result", zap.String("status", string(finalStatus)), zap.String("msgId", msgId))
+			msgLogger.Info("Published final job result", zap.Any("response", *response), zap.String("status", string(finalStatus)), zap.String("msgId", msgId))
 		}
 	}()
 

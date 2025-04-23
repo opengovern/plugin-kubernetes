@@ -231,13 +231,13 @@ func (w *Worker) ProcessMessage(ctx context.Context, msg jetstream.Msg) (err err
 		}
 	}()
 
-	token, err := getJWTAuthToken()
-	if err != nil {
-		return fmt.Errorf("failed to get JWT token: %w", err)
-	}
+	//token, err := getJWTAuthToken()
+	//if err != nil {
+	//	return fmt.Errorf("failed to get JWT token: %w", err)
+	//}
 
 	msgLogger.Info("Starting task execution")
-	taskRunner, err := task.NewTaskRunner(ctxWithCancel, w.jq, envs.InventoryServiceEndpoint, token, w.esClient, msgLogger, request, response)
+	taskRunner, err := task.NewTaskRunner(ctxWithCancel, w.jq, envs.InventoryServiceEndpoint, "", w.esClient, msgLogger, request, response)
 	if err != nil {
 		msgLogger.Error("failed to create task runner", zap.Error(err))
 		return err

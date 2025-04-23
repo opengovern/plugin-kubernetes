@@ -58,7 +58,7 @@ type TaskResult struct {
 	AllIntegrations             []string                      `json:"all_integrations"`
 	AllIntegrationsCount        int                           `json:"all_integrations_count"`
 	ProgressedIntegrations      map[string]*IntegrationResult `json:"progressed_integrations"`
-	ProgressedIntegrationsCount int                           `json:"proposed_integrations_count"`
+	ProgressedIntegrationsCount int                           `json:"progressed_integrations_count"`
 }
 
 type IntegrationResult struct {

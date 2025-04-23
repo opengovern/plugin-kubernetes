@@ -72,10 +72,10 @@ func Do(ctx context.Context,
 	}
 	// logger.Info("decrypted config", zap.Any("config", config))
 
-	return doDescribe(ctx, logger, job, params, config, grpcEndpoint, ingestionPipelineEndpoint, describeDeliverToken, useOpenSearch)
+	return Describe(ctx, logger, job, params, config, grpcEndpoint, ingestionPipelineEndpoint, describeDeliverToken, useOpenSearch)
 }
 
-func doDescribe(
+func Describe(
 	ctx context.Context,
 	logger *zap.Logger,
 	job describe2.DescribeJob,

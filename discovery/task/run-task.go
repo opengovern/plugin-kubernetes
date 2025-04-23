@@ -213,7 +213,7 @@ func GetIntegrationsFromQuery(coreServiceClient coreClient.CoreServiceClient, pa
 }
 
 func GetResourceTypesFromQuery(coreServiceClient coreClient.CoreServiceClient, params map[string]any) ([]ResourceType, error) {
-	if v, ok := params["integrations_query"]; ok {
+	if v, ok := params["resource_types_query"]; ok {
 		if vv, ok := v.(string); !ok {
 			return nil, fmt.Errorf("query id should be a string")
 		} else {

@@ -89,6 +89,7 @@ type Integration struct {
 }
 
 func (tr *TaskRunner) RunTask(ctx context.Context) error {
+	tr.logger.Info("Run task")
 
 	taskResult := &TaskResult{}
 	var err error
@@ -110,6 +111,8 @@ func (tr *TaskRunner) RunTask(ctx context.Context) error {
 	}
 	taskResult.AllIntegrationsCount = len(integrations)
 	taskResult.ProgressedIntegrations = make(map[string]*IntegrationResult)
+
+	tr.logger.Info("Describing integrations", zap.Any("integrations", integrations))
 
 	for _, i := range integrations {
 		err = tr.describeIntegrationResourceTypes(ctx, i, taskResult)
@@ -153,6 +156,8 @@ func (tr *TaskRunner) describeIntegrationResourceTypes(ctx context.Context, i In
 			return err
 		}
 	}
+
+	tr.logger.Info("Describing integration", zap.String("integration_id", i.IntegrationID), zap.Any("resource_types", resourceTypes))
 
 	for _, rt := range resourceTypes {
 		taskResult.ProgressedIntegrations[i.IntegrationID].AllResourceTypes = append(taskResult.ProgressedIntegrations[i.IntegrationID].AllResourceTypes, rt.Name)
@@ -211,6 +216,7 @@ func (tr *TaskRunner) describeIntegrationResourceTypes(ctx context.Context, i In
 			tr.logger.Error("failed to publish initial InProgress job status", zap.String("response", string(responseJson)), zap.Error(err))
 			return err
 		}
+		tr.logger.Info("describing resource type finished", zap.String("integration_id", i.IntegrationID), zap.String("resource_type", rt.Name))
 	}
 
 	return nil

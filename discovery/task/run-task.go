@@ -134,7 +134,7 @@ func (tr *TaskRunner) describeIntegrationResourceTypes(ctx context.Context, i In
 		}
 
 		job := describe.DescribeJob{
-			JobID:                  0,
+			JobID:                  tr.request.TaskDefinition.RunID,
 			ResourceType:           rt.Name,
 			IntegrationID:          i.IntegrationID,
 			ProviderID:             i.ProviderID,

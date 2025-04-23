@@ -2,11 +2,9 @@ package worker
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"errors" // Added import
 	"fmt"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/opengovern/og-describer-kubernetes/discovery/envs"
@@ -17,7 +15,6 @@ import (
 	"github.com/opengovern/opensecurity/services/tasks/db/models"
 	"github.com/opengovern/opensecurity/services/tasks/scheduler"
 	"go.uber.org/zap"
-	"os"
 	"strconv"
 	"time"
 )
@@ -231,11 +228,6 @@ func (w *Worker) ProcessMessage(ctx context.Context, msg jetstream.Msg) (err err
 		}
 	}()
 
-	//token, err := getJWTAuthToken()
-	//if err != nil {
-	//	return fmt.Errorf("failed to get JWT token: %w", err)
-	//}
-
 	msgLogger.Info("Starting task execution")
 	taskRunner, err := task.NewTaskRunner(ctxWithCancel, w.jq, envs.InventoryServiceEndpoint, "", w.esClient, msgLogger, request, response)
 	if err != nil {
@@ -250,29 +242,4 @@ func (w *Worker) ProcessMessage(ctx context.Context, msg jetstream.Msg) (err err
 	}
 
 	return err
-}
-
-func getJWTAuthToken() (string, error) {
-	privateKey, ok := os.LookupEnv("JWT_PRIVATE_KEY")
-	if !ok {
-		return "", fmt.Errorf("JWT_PRIVATE_KEY not set")
-	}
-
-	privateKeyBytes, err := base64.StdEncoding.DecodeString(privateKey)
-	if err != nil {
-		return "", fmt.Errorf("JWT_PRIVATE_KEY not base64 encoded")
-	}
-
-	pk, err := jwt.ParseRSAPrivateKeyFromPEM(privateKeyBytes)
-	if err != nil {
-		return "", fmt.Errorf("JWT_PRIVATE_KEY not valid")
-	}
-
-	token, err := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
-		"email": "describe-worker@opengovernance.io",
-	}).SignedString(pk)
-	if err != nil {
-		return "", fmt.Errorf("JWT token generation failed %v", err)
-	}
-	return token, nil
 }

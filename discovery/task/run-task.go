@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/opengovern/og-describer-kubernetes/discovery/envs"
 	"github.com/opengovern/og-describer-kubernetes/discovery/pkg/orchestrator"
 	authApi "github.com/opengovern/og-util/pkg/api"
 	"github.com/opengovern/og-util/pkg/describe"
@@ -54,6 +55,24 @@ func NewTaskRunner(ctx context.Context, jq *jq.JobQueue, coreServiceEndpoint str
 }
 
 type TaskResult struct {
+	AllIntegrations             []string                      `json:"all_integrations"`
+	AllIntegrationsCount        int                           `json:"all_integrations_count"`
+	ProgressedIntegrations      map[string]*IntegrationResult `json:"proposed_integrations"`
+	ProgressedIntegrationsCount int                           `json:"proposed_integrations_count"`
+}
+
+type IntegrationResult struct {
+	IntegrationID              string               `json:"integration_id"`
+	AllResourceTypes           []string             `json:"all_resource_types"`
+	AllResourceTypesCount      int                  `json:"all_resource_types_count"`
+	ResourceTypeResults        []ResourceTypeResult `json:"resource_type_results"`
+	FinishedResourceTypesCount int                  `json:"finished_resource_types_count"`
+}
+
+type ResourceTypeResult struct {
+	ResourceType  string `json:"resource_type"`
+	Error         string `json:"error"`
+	ResourceCount int    `json:"resource_count"`
 }
 
 type ResourceType struct {
@@ -86,8 +105,15 @@ func (tr *TaskRunner) RunTask(ctx context.Context) error {
 		}
 	}
 
+	taskResult.AllIntegrations = make([]string, len(integrations))
 	for _, i := range integrations {
-		err = tr.describeIntegrationResourceTypes(ctx, i)
+		taskResult.AllIntegrations = append(taskResult.AllIntegrations, i.IntegrationID)
+	}
+	taskResult.AllIntegrationsCount = len(integrations)
+	taskResult.ProgressedIntegrations = make(map[string]*IntegrationResult)
+
+	for _, i := range integrations {
+		err = tr.describeIntegrationResourceTypes(ctx, i, taskResult)
 		if err != nil {
 			tr.logger.Error("Error describing integrations", zap.Error(err))
 			return err
@@ -104,7 +130,12 @@ func (tr *TaskRunner) RunTask(ctx context.Context) error {
 	return nil
 }
 
-func (tr *TaskRunner) describeIntegrationResourceTypes(ctx context.Context, i Integration) error {
+func (tr *TaskRunner) describeIntegrationResourceTypes(ctx context.Context, i Integration, taskResult *TaskResult) error {
+	taskResult.ProgressedIntegrations[i.IntegrationID] = &IntegrationResult{
+		IntegrationID: i.IntegrationID,
+	}
+	taskResult.ProgressedIntegrationsCount++
+
 	var resourceTypes []ResourceType
 	var err error
 
@@ -123,6 +154,13 @@ func (tr *TaskRunner) describeIntegrationResourceTypes(ctx context.Context, i In
 			return err
 		}
 	}
+
+	taskResult.ProgressedIntegrations[i.IntegrationID].AllResourceTypes = make([]string, len(resourceTypes))
+	for _, rt := range resourceTypes {
+		taskResult.ProgressedIntegrations[i.IntegrationID].AllResourceTypes = append(taskResult.ProgressedIntegrations[i.IntegrationID].AllResourceTypes, rt.Name)
+	}
+	taskResult.ProgressedIntegrations[i.IntegrationID].AllResourceTypesCount = len(resourceTypes)
+	taskResult.ProgressedIntegrations[i.IntegrationID].ResourceTypeResults = make([]ResourceTypeResult, len(resourceTypes))
 
 	for _, rt := range resourceTypes {
 		params := make(map[string]string)
@@ -144,10 +182,36 @@ func (tr *TaskRunner) describeIntegrationResourceTypes(ctx context.Context, i In
 			IntegrationLabels:      i.Labels,
 			IntegrationAnnotations: i.Annotations,
 		}
-		_, err = orchestrator.Describe(ctx, tr.logger, job, params, config, tr.request.EsDeliverEndpoint,
+		resources, err := orchestrator.Describe(ctx, tr.logger, job, params, config, tr.request.EsDeliverEndpoint,
 			tr.request.IngestionPipelineEndpoint, tr.describeToken, tr.request.UseOpenSearch)
+		errMsg := ""
 		if err != nil {
 			tr.logger.Error("Error describing job", zap.Error(err))
+			errMsg = err.Error()
+		}
+		taskResult.ProgressedIntegrations[i.IntegrationID].ResourceTypeResults = append(
+			taskResult.ProgressedIntegrations[i.IntegrationID].ResourceTypeResults,
+			ResourceTypeResult{
+				ResourceType:  rt.Name,
+				Error:         errMsg,
+				ResourceCount: len(resources),
+			})
+
+		taskResult.ProgressedIntegrations[i.IntegrationID].FinishedResourceTypesCount = len(taskResult.ProgressedIntegrations[i.IntegrationID].ResourceTypeResults)
+		jsonBytes, err := json.Marshal(taskResult)
+		if err != nil {
+			err = fmt.Errorf("failed Marshaling task result: %s", err.Error())
+			return err
+		}
+		tr.response.Result = jsonBytes
+		responseJson, marshalErr := json.Marshal(tr.response)
+		if marshalErr != nil {
+			tr.logger.Error("failed to create final job result json", zap.Error(marshalErr))
+			return marshalErr
+		}
+		msgId := fmt.Sprintf("task-run-result-%d", tr.request.TaskDefinition.RunID)
+		if _, err = tr.jq.Produce(ctx, envs.ResultTopicName, responseJson, msgId); err != nil { // Use original ctx
+			tr.logger.Error("failed to publish initial InProgress job status", zap.String("response", string(responseJson)), zap.Error(err))
 			return err
 		}
 	}

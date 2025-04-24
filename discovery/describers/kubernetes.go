@@ -11,6 +11,33 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+func KubernetesResources(ctx context.Context, client model.Client, extra string, stream *models.StreamSender) ([]models.Resource, error) {
+	var allValues []models.Resource
+
+	resources, err := GetKubernetesResources(client.KubeConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, r := range resources {
+		resource := models.Resource{
+			ID:          r.UID,
+			Name:        r.ObjectName,
+			Description: r,
+		}
+
+		if stream != nil {
+			if err := (*stream)(resource); err != nil {
+				return allValues, fmt.Errorf("error streaming resource: %w", err)
+			}
+		} else {
+			allValues = append(allValues, resource)
+		}
+	}
+
+	return allValues, nil
+}
+
 func KubernetesCluster(ctx context.Context, client model.Client, extra string, stream *models.StreamSender) ([]models.Resource, error) {
 	var allValues []models.Resource
 

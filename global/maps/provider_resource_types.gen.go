@@ -8,6 +8,19 @@ import (
 )
 var ResourceTypes = map[string]model.ResourceType{
 
+	"Kubernetes/Resource": {
+		IntegrationType:      constants.IntegrationName,
+		ResourceName:         "Kubernetes/Resource",
+		Tags:                 map[string][]string{
+        },
+		Labels:               map[string]string{
+        },
+		Annotations:          map[string]string{
+        },
+		ListDescriber:        provider.DescribeByIntegration(describers.KubernetesResources),
+		GetDescriber:         nil,
+	},
+
 	"Kubernetes/Node": {
 		IntegrationType:      constants.IntegrationName,
 		ResourceName:         "Kubernetes/Node",
@@ -454,6 +467,13 @@ var ResourceTypes = map[string]model.ResourceType{
 
 var ResourceTypeConfigs = map[string]*interfaces.ResourceTypeConfiguration{
 
+	"Kubernetes/Resource": {
+		Name:         "Kubernetes/Resource",
+		IntegrationType:      constants.IntegrationName,
+		Description:                 "",
+		
+	},
+
 	"Kubernetes/Node": {
 		Name:         "Kubernetes/Node",
 		IntegrationType:      constants.IntegrationName,
@@ -695,6 +715,7 @@ var ResourceTypeConfigs = map[string]*interfaces.ResourceTypeConfiguration{
 
 
 var ResourceTypesList = []string{
+  "Kubernetes/Resource",
   "Kubernetes/Node",
   "Kubernetes/PersistentVolume",
   "Kubernetes/PersistentVolumeClaim",

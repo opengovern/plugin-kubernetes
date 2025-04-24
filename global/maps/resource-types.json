@@ -1,5 +1,13 @@
 [
- {
+  {
+    "ResourceName": "Kubernetes/Resource",
+    "Tags": {},
+    "ListDescriber": "DescribeByIntegration(describers.KubernetesResources)",
+    "GetDescriber": "",
+    "SteampipeTable": "kubernetes_resource",
+    "Model": "KubernetesResource",
+    "Params": []
+  },{
    "ResourceName": "Kubernetes/Node",
    "Tags": {},
    "ListDescriber": "DescribeByIntegration(describers.KubernetesNode)",

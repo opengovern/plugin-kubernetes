@@ -328,8 +328,6 @@ func DoDiscovery(kubeConfig string) (*model.KubernetesClusterDescription, error)
 
 	kubeconfigPath := "./kubeconfig.yaml"
 
-	fmt.Println("kubeConfig", kubeConfig)
-
 	// Write the string into the file with 0600 permissions
 	err := os.WriteFile(kubeconfigPath, []byte(kubeConfig), 0600)
 	if err != nil {

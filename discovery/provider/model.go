@@ -10,6 +10,19 @@ import (
 type Metadata struct {
 }
 
+type KubernetesResourceDescription struct {
+	Kind              string
+	ObjectName        string
+	Namespace         string
+	UID               string
+	CreationTimestamp string
+	ResourceVersion   string
+	ResourceTable     string
+	ApiVersion        string
+	Metadata          map[string]interface{}
+	Status            interface{}
+}
+
 type KubernetesClusterDescription struct {
 	AuthMethod            string
 	ContextName           string

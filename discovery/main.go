@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/opengovern/og-describer-kubernetes/discovery/worker"
+	"github.com/opengovern/og-describer-kubernetes/discovery/pkg/worker"
 	"os"
 	"os/signal"
 	"syscall"

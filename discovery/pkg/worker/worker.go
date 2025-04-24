@@ -8,7 +8,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/opengovern/og-describer-kubernetes/discovery/envs"
-	"github.com/opengovern/og-describer-kubernetes/discovery/task"
+	"github.com/opengovern/og-describer-kubernetes/discovery/pkg/task"
 	"github.com/opengovern/og-util/pkg/jq"
 	"github.com/opengovern/og-util/pkg/opengovernance-es-sdk"
 	"github.com/opengovern/og-util/pkg/tasks"

@@ -4,14 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/go-errors/errors"
 	model "github.com/opengovern/og-describer-kubernetes/discovery/pkg/models"
 	"github.com/opengovern/og-describer-kubernetes/discovery/provider"
 	"github.com/opengovern/og-describer-kubernetes/global"
 	"github.com/opengovern/og-describer-kubernetes/global/constants"
 	describe2 "github.com/opengovern/og-util/pkg/describe"
 	"github.com/opengovern/og-util/pkg/es"
-	"github.com/opengovern/og-util/pkg/vault"
 	"go.uber.org/zap"
 	strconv "strconv"
 	"strings"
@@ -45,34 +43,6 @@ func trimJsonFromEmptyObjects(input []byte) ([]byte, error) {
 	}
 	trimEmptyMaps(unknownData)
 	return json.Marshal(unknownData)
-}
-
-func Do(ctx context.Context,
-	vlt vault.VaultSourceConfig,
-	logger *zap.Logger,
-	job describe2.DescribeJob,
-	params map[string]string,
-	grpcEndpoint string,
-	describeDeliverToken string,
-	ingestionPipelineEndpoint string,
-	useOpenSearch bool) (resourceIDs []string, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("paniced with error: %v", r)
-			logger.Error("paniced with error", zap.Error(err), zap.String("stackTrace", errors.Wrap(r, 2).ErrorStack()))
-		}
-	}()
-
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	config, err := vlt.Decrypt(ctx, job.CipherText)
-	if err != nil {
-		return nil, fmt.Errorf("decrypt error: %w", err)
-	}
-	// logger.Info("decrypted config", zap.Any("config", config))
-
-	return Describe(ctx, logger, job, params, config, grpcEndpoint, ingestionPipelineEndpoint, describeDeliverToken, useOpenSearch)
 }
 
 func Describe(

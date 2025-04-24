@@ -229,17 +229,28 @@ func (w *Worker) ProcessMessage(ctx context.Context, msg jetstream.Msg) (err err
 	}()
 
 	msgLogger.Info("Starting task execution")
-	taskRunner, err := task.NewTaskRunner(ctxWithCancel, w.jq, envs.InventoryServiceEndpoint, "", w.esClient, msgLogger, request, response)
-	if err != nil {
-		msgLogger.Error("failed to create task runner", zap.Error(err))
-		return err
-	}
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				msgLogger.Error("panic occurred during task execution", zap.Any("recover", r))
+				err = fmt.Errorf("panic recovered: %v", r)
+			}
+		}()
 
-	err = taskRunner.RunTask(ctxWithCancel)
-	if err != nil {
-		msgLogger.Error("failed to run task runner", zap.Error(err))
-		return err
-	}
+		msgLogger.Info("Starting task execution")
+		taskRunner, createErr := task.NewTaskRunner(ctxWithCancel, w.jq, envs.InventoryServiceEndpoint, "", w.esClient, msgLogger, request, response)
+		if createErr != nil {
+			msgLogger.Error("failed to create task runner", zap.Error(createErr))
+			err = createErr
+			return
+		}
+
+		runErr := taskRunner.RunTask(ctxWithCancel)
+		if runErr != nil {
+			msgLogger.Error("failed to run task runner", zap.Error(runErr))
+			err = runErr
+		}
+	}()
 
 	return err
 }

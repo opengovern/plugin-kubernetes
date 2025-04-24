@@ -1010,14 +1010,6 @@ func ConvertPersistentVolumeClaimStatus(status corev1.PersistentVolumeClaimStatu
 			allocatedResourceStatus[string(k)] = string(v)
 		}
 	}
-	modifyVolumeStatus := struct {
-		TargetVolumeAttributesClassName string
-		Status                          string
-	}{}
-	if status.ModifyVolumeStatus != nil {
-		modifyVolumeStatus.TargetVolumeAttributesClassName = status.ModifyVolumeStatus.TargetVolumeAttributesClassName
-		modifyVolumeStatus.Status = string(status.ModifyVolumeStatus.Status)
-	}
 	return PersistentVolumeClaimStatus{
 		Phase:                            string(status.Phase),
 		AccessModes:                      accessModes,
@@ -1026,7 +1018,13 @@ func ConvertPersistentVolumeClaimStatus(status corev1.PersistentVolumeClaimStatu
 		AllocatedResources:               allocatedResources,
 		AllocatedResourceStatuses:        allocatedResourceStatus,
 		CurrentVolumeAttributesClassName: status.CurrentVolumeAttributesClassName,
-		ModifyVolumeStatus:               &modifyVolumeStatus,
+		ModifyVolumeStatus: &struct {
+			TargetVolumeAttributesClassName string
+			Status                          string
+		}{
+			TargetVolumeAttributesClassName: status.ModifyVolumeStatus.TargetVolumeAttributesClassName,
+			Status:                          string(status.ModifyVolumeStatus.Status),
+		},
 	}
 }
 

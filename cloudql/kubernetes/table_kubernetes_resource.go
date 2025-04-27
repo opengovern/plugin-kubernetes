@@ -14,7 +14,7 @@ func tableKubernetesResource(ctx context.Context) *plugin.Table {
 		Name:        "k8_resource",
 		Description: "ClusterRole contains rules that represent a set of permissions.",
 		List: &plugin.ListConfig{
-			Hydrate: opengovernance.ListKubernetesCluster,
+			Hydrate: opengovernance.ListKubernetesResource,
 		},
 		Columns: commonGeneralColumns([]*plugin.Column{
 			{

@@ -7,7 +7,7 @@ id: "kubernetes-plugin-describer" # Required for standalone task
 metadata:
   author: "ClearCompass Engineering Team" # Required
   contact: "engineering@clearcompass.so"   # Required
-  published-date: "2025-04-26"           # Required: Format YYYY-MM-DD
+  published_date: "2025-04-26"           # Required: Format YYYY-MM-DD
   license: "Apache-2.0"                  # Required: Valid SPDX ID
   description: "Standalone task describer for Kubernetes resources." # Optional
   website: "https://clearcompass.so/"      # Optional

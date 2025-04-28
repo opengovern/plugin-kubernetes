@@ -11,7 +11,7 @@ supported_platform_versions: # Platform versions this plugin is compatible with
 metadata:
   author: "clearcompass Engineering Team"
   contact: "plugins@clearcompass.so"
-  published-date: "2025-04-27" # Must be YYYY-MM-DD format
+  published_date: "2025-04-27" # Must be YYYY-MM-DD format
   license: "Apache-2.0" # Must be a valid SPDX identifier
   description: "Kubernetes Integration to opensecurity" # Optional
   website: "https://clearcompass.so" # Optional

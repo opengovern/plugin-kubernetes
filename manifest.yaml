@@ -1,0 +1,61 @@
+# Top-level fields identifying the specification
+api_version: v1
+type: plugin # Specifies this is a plugin specification
+
+# --- Plugin-specific details (now at the top level) ---
+name: "plugin-kubernetes" # Name of the plugin
+version: "1.2.0" # Semantic version of the plugin
+supported_platform_versions: # Platform versions this plugin is compatible with
+  - ">=2.1.0, <3.0.0"
+  - "~1.5.0" # Example: Compatible with 1.5.x
+metadata:
+  author: "clearcompass Engineering Team"
+  contact: "plugins@clearcompass.so"
+  published-date: "2025-04-27" # Must be YYYY-MM-DD format
+  license: "Apache-2.0" # Must be a valid SPDX identifier
+  description: "Kubernetes Integration to opensecurity" # Optional
+  website: "https://clearcompass.so" # Optional
+
+# --- Components required by the plugin (now at the top level) ---
+components:
+  # --- Discovery Component ---
+  # Use 'task-spec' to embed the full task details.
+  # Alternatively, use 'task-id: "some-task-id"' to reference an existing task.
+  discovery:
+    task_spec: # Embed the full spec under this key
+      # id, name, description, type are optional here and will default based on plugin name
+      is_enabled: true # Required: Whether the task runs by default
+      image_url: "ghcr.io/opengovern/og-describer-kubernetes@sha256:5c0d50bc790ef0d9a890578f22ead26ff3f92e075af01941b804f7930a90e88b" # Required: Image URL with digest
+      command: ["/og-describer-kubernetes"] # Required: Command and args (exec form)
+      timeout: "90m" # Required: Max execution time (< 24h)
+      scale_config: # Required: Scaling parameters
+        lag_threshold: "1" # Required: Positive integer string
+        min_replica: 0 # Required: >= 0
+        max_replica: 5 # Required: >= min_replica
+      params: ["integrations_query", "resource_types_query"] # Required: List of expected parameters (can be empty [])
+      configs: [] # Required: List of configurations (can be empty [])
+      run_schedule: # Required: List of run schedules (min 1)
+        - id: "describe-all" # Required: Must have 'default' or 'describe-all' if params exist
+          params:
+            # Use literal block scalar style for multi-line SQL
+            integrations_query: |
+              SELECT i.*, c.secret FROM platform_integrations AS i LEFT JOIN platform_integrations_credentials AS c ON i.integration_id = c.integration_id WHERE i.integration_type = 'kubernetes' AND c.secret IS NOT NULL;
+            resource_types_query: |
+              SELECT * FROM platform_integration_resource_types WHERE integration_type = 'kubernetes';
+          frequency: "6h" # Required: How often to run
+      # api-version, metadata, supported-platform-versions MUST NOT be present here
+
+  # --- Downloadable Components ---
+  platform_binary:
+    uri: "https://github.com/opengovern/plugin-kubernetes/releases/download/v0.6.37/kubernetes-plugin.zip"
+    path_in_archive: "integration-plugin"
+    # checksum: "sha256:..." # Optional but recommended
+  cloudql_binary:
+    uri: "https://github.com/opengovern/plugin-kubernetes/releases/download/v0.6.37/kubernetes-plugin.zip"
+    path_in_archive: "cloudql-plugin"
+    # checksum: "sha256:..." # Optional but recommended
+
+# --- Optional Sample Data (now at the top level) ---
+# sample-data:
+#   uri: "https://example.com/releases/v1.2.0/sample-data.tar.gz"
+#   checksum: "sha256:..." # Optional

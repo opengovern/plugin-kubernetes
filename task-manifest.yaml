@@ -1,0 +1,44 @@
+# Top-level fields identifying the specification
+api_version: v1 # Required for standalone task (or defaults to v1 if omitted)
+type: task      # Required: Must be 'task' for standalone task
+id: "kubernetes-plugin-describer" # Required for standalone task
+
+# --- Metadata (Required for Standalone Task) ---
+metadata:
+  author: "ClearCompass Engineering Team" # Required
+  contact: "engineering@clearcompass.so"   # Required
+  published-date: "2025-04-26"           # Required: Format YYYY-MM-DD
+  license: "Apache-2.0"                  # Required: Valid SPDX ID
+  description: "Standalone task describer for Kubernetes resources." # Optional
+  website: "https://clearcompass.so/"      # Optional
+
+# --- Platform Compatibility (Required for Standalone Task) ---
+supported_platform_versions:
+  - ">=2.0.0, <3.0.0"
+
+# --- Task Execution Details ---
+name: "Kubernetes Plugin Describer" # Required for standalone task
+description: "Kubernetes Plugin Describer" # Required for standalone task
+is_enabled: true # Required
+image_url: "ghcr.io/opengovern/og-describer-kubernetes@sha256:5c0d50bc790ef0d9a890578f22ead26ff3f92e075af01941b804f7930a90e88b" # Required: Digest format
+command: ["/og-describer-kubernetes"] # Required: List format (exec form)
+timeout: "120m" # Required
+scale_config: # Required
+  lag_threshold: "1"
+  min_replica: 0
+  max_replica: 5
+params: ["integrations_query", "resource_types_query"] # Required (can be empty: [])
+configs: [] # Required (can be empty: [])
+run_schedule: # Required (min 1 entry)
+  - id: "describe-all"
+    params:
+      "integrations_query": "SELECT i.*, c.secret FROM platform_integrations AS i LEFT JOIN platform_integrations_credentials AS c ON i.integration_id = c.integration_id WHERE i.integration_type = 'kubernetes' AND c.secret IS NOT NULL;"
+      "resource_types_query": "SELECT * FROM platform_integration_resource_types WHERE integration_type = 'kubernetes';"
+    frequency: "1d"
+  - id: "describe-resource"
+    params:
+      "integrations_query": "SELECT i.*, c.secret FROM platform_integrations AS i LEFT JOIN platform_integrations_credentials AS c ON i.integration_id = c.integration_id WHERE i.integration_type = 'kubernetes' AND c.secret IS NOT NULL;"
+      "resource_types_query": "SELECT * FROM platform_integration_resource_types WHERE integration_type = 'kubernetes' AND resource_type='Kubernetes/Resource';"
+    frequency: "15m"
+
+# Note: 'artifacts_url' and 'steampipe_plugin_name' are not part of the defined TaskSpecification struct.

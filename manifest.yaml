@@ -15,6 +15,7 @@ metadata:
   license: "Apache-2.0" # Must be a valid SPDX identifier
   description: "Kubernetes Integration to opensecurity" # Optional
   website: "https://clearcompass.so" # Optional
+  icon: "kubernetes.svg"
 
 # --- Components required by the plugin (now at the top level) ---
 components:

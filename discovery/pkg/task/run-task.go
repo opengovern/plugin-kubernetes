@@ -239,7 +239,10 @@ func GetIntegrationsFromQuery(coreServiceClient coreClient.CoreServiceClient, pa
 			}
 			var integrations []Integration
 			for _, r := range queryResponse.Result {
-				integ := Integration{}
+				integ := Integration{
+					Annotations: make(map[string]string),
+					Labels:      make(map[string]string),
+				}
 				for i, rc := range r {
 					switch queryResponse.Headers[i] {
 					case "integration_id":

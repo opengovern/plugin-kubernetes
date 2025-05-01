@@ -3,7 +3,7 @@ api_version: v1
 type: plugin # Specifies this is a plugin specification
 
 # --- Plugin-specific details (now at the top level) ---
-name: "plugin-kubernetes" # Name of the plugin
+name: "kubernetes" # Name of the plugin
 version: "1.2.0" # Semantic version of the plugin
 supported_platform_versions: # Platform versions this plugin is compatible with
   - ">=2.1.0, <3.0.0"

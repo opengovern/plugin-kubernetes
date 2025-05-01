@@ -252,19 +252,21 @@ func GetIntegrationsFromQuery(coreServiceClient coreClient.CoreServiceClient, pa
 						integ.Secret = rc.(string)
 					case "annotations":
 						if rc != nil {
-							if jsonStr, ok := rc.(string); ok {
-								var ann map[string]string
-								if err := json.Unmarshal([]byte(jsonStr), &ann); err == nil {
-									integ.Annotations = ann
+							if obj, ok := rc.(map[string]interface{}); ok {
+								for k, v := range obj {
+									if vStr, ok := v.(string); ok {
+										integ.Annotations[k] = vStr
+									}
 								}
 							}
 						}
 					case "labels":
 						if rc != nil {
-							if jsonStr, ok := rc.(string); ok {
-								var lbl map[string]string
-								if err := json.Unmarshal([]byte(jsonStr), &lbl); err == nil {
-									integ.Labels = lbl
+							if obj, ok := rc.(map[string]interface{}); ok {
+								for k, v := range obj {
+									if vStr, ok := v.(string); ok {
+										integ.Labels[k] = vStr
+									}
 								}
 							}
 						}

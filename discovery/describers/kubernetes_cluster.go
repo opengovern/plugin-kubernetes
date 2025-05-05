@@ -176,7 +176,7 @@ type KubeConfigInfo struct {
 // GetClusterInfo connects to the Kubernetes cluster using the validated configuration,
 // retrieves metadata including the server version, and determines the authentication method used.
 // It *always* returns a JSON string: ClusterInfo on success, or ErrorInfo on failure.
-func GetClusterInfo(ctx context.Context, configAPI *api.Config, restConfig *rest.Config, logger *zap.Logger) string {
+func GetClusterInfo(ctx context.Context, configAPI *api.Config, restConfig *rest.Config, logger *zap.Logger) (*ClusterInfo, error) {
 	fields := []zap.Field{
 		zap.String("current_context", configAPI.CurrentContext),
 	}
@@ -230,9 +230,7 @@ func GetClusterInfo(ctx context.Context, configAPI *api.Config, restConfig *rest
 
 	clientset, err := kubernetes.NewForConfig(&clientRestConfig)
 	if err != nil {
-		wrappedErr := xerrors.Errorf("failed to create Kubernetes clientset from REST config: %w", err)
-		l.Error("Cannot create Kubernetes clientset", zap.Error(wrappedErr))
-		return createErrorJSON("Internal error: Failed to create Kubernetes client", err, logger)
+		return nil, err
 	}
 
 	// 3. Get Server Version (with Retries)
@@ -292,24 +290,11 @@ func GetClusterInfo(ctx context.Context, configAPI *api.Config, restConfig *rest
 	}
 
 	if lastErr != nil {
-		errMsg := "Failed to connect to cluster or get server version after retries"
-		if contextCancelled || xerrors.Is(lastErr, context.Canceled) {
-			errMsg = "Operation cancelled while trying to get server version"
-		}
-		l.Error(errMsg, zap.Int("retries_attempted", MaxRetries), zap.Error(lastErr)) // Logged at Error level
-		return createErrorJSON(errMsg, lastErr, logger)
-	}
-
-	// 4. Marshal Success JSON
-	successJSONBytes, err := json.Marshal(output)
-	if err != nil {
-		wrappedErr := xerrors.Errorf("internal error: failed to marshal successful cluster info: %w", err)
-		l.Error("Failed to marshal success response", zap.Error(wrappedErr)) // Logged at Error level
-		return createErrorJSON("Internal error: Failed to create success JSON response", err, logger)
+		return nil, lastErr
 	}
 
 	// 5. Return Success JSON
-	return string(successJSONBytes)
+	return &output, nil
 }
 
 func DoDiscovery(kubeConfig string) (*model.KubernetesClusterDescription, error) {
@@ -353,14 +338,10 @@ func DoDiscovery(kubeConfig string) (*model.KubernetesClusterDescription, error)
 	}
 
 	// --- Execute Action Based on Flag ---
-	var resultJSON string
 
 	logger.Info("Fetching cluster information...", zap.String("kubeconfig_path", kubeconfigPath)) // Logged at Info level
-	resultJSON = GetClusterInfo(ctx, configAPI, restConfig, logger)
-
-	// --- Determine Exit Code Based on Result ---
-	var result model.KubernetesClusterDescription
-	if err := json.Unmarshal([]byte(resultJSON), &result); err != nil {
+	result, err := GetClusterInfo(ctx, configAPI, restConfig, logger)
+	if err != nil {
 		return nil, err
 	}
 
@@ -369,5 +350,11 @@ func DoDiscovery(kubeConfig string) (*model.KubernetesClusterDescription, error)
 		return nil, err
 	}
 
-	return &result, nil
+	return &model.KubernetesClusterDescription{
+		AuthMethod:            result.AuthMethod,
+		ContextName:           result.ContextName,
+		Endpoint:              result.Endpoint,
+		ServerVersion:         result.ServerVersion,
+		TLSServerVerification: result.TLSServerVerification,
+	}, nil
 }

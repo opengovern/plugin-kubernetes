@@ -6653,9 +6653,8 @@ func (p KubernetesSecretPaginator) NextPage(ctx context.Context) ([]KubernetesSe
 }
 
 var listKubernetesSecretFilters = map[string]string{
-	"data":        "Description.Secret.Data",
+	"data_number": "Description.DataNumber",
 	"immutable":   "Description.Secret.Immutable",
-	"string_data": "Description.Secret.StringData",
 	"title":       "Description.Secret.Name",
 	"type":        "Description.Secret.Type",
 }
@@ -6721,9 +6720,8 @@ func ListKubernetesSecret(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 }
 
 var getKubernetesSecretFilters = map[string]string{
-	"data":        "Description.Secret.Data",
+	"data_number": "Description.DataNumber",
 	"immutable":   "Description.Secret.Immutable",
-	"string_data": "Description.Secret.StringData",
 	"title":       "Description.Secret.Name",
 	"type":        "Description.Secret.Type",
 }

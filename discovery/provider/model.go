@@ -179,6 +179,7 @@ type KubernetesRoleBindingDescription struct {
 type KubernetesSecretDescription struct {
 	MetaObject helpers.ObjectMeta
 	Secret     helpers.Secret
+	DataNumber int
 }
 type KubernetesServiceDescription struct {
 	MetaObject helpers.ObjectMeta

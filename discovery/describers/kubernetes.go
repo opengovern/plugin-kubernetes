@@ -1059,6 +1059,9 @@ func KubernetesSecret(ctx context.Context, client model.Client, extra string, st
 	}
 
 	for _, secret := range secrets.Items {
+		secret.StringData = nil
+		dataNumber := len(secret.Data)
+		secret.Data = nil
 		var resource models.Resource
 		resource = models.Resource{
 			ID:   fmt.Sprintf("secret/%s/%s", secret.Namespace, secret.Name),
@@ -1066,6 +1069,7 @@ func KubernetesSecret(ctx context.Context, client model.Client, extra string, st
 			Description: model.KubernetesSecretDescription{
 				MetaObject: helpers.ConvertObjectMeta(&secret.ObjectMeta),
 				Secret:     helpers.ConvertSecret(&secret),
+				DataNumber: dataNumber,
 			},
 		}
 
